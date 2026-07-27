@@ -20,8 +20,8 @@ const VoicePrompt = z.object({
 @Injectable()
 export class OpenaiService {
   async generateImage(prompt: string, isVertical = false) {
-    // gpt-image models always return base64 (b64_json) and do not accept the
-    // `response_format` parameter, unlike the deprecated dall-e-3.
+    // gpt-image models return base64 (b64_json) and do not accept the
+    // `response_format` parameter; third-party providers may return a URL instead.
     const generate = (
       await openai.images.generate({
         prompt,
@@ -30,7 +30,17 @@ export class OpenaiService {
       })
     ).data[0];
 
-    return generate.b64_json;
+    if (generate.b64_json) {
+      return generate.b64_json;
+    }
+
+    if (generate.url) {
+      const response = await fetch(generate.url);
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer).toString('base64');
+    }
+
+    return undefined;
   }
 
   async generatePromptForPicture(prompt: string) {
