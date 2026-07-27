@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Agent } from '@mastra/core/agent';
-import { openai } from '@ai-sdk/openai';
+import { openai, createOpenAI } from '@ai-sdk/openai';
 import { Memory } from '@mastra/memory';
 import { pStore } from '@gitroom/nestjs-libraries/chat/mastra.store';
 import { array, object, string } from 'zod';
@@ -42,6 +42,12 @@ export class LoadToolsService {
 
   async agent() {
     const tools = await this.loadTools();
+    const aiProvider = process.env.OPENAI_BASE_URL
+      ? createOpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+          baseURL: process.env.OPENAI_BASE_URL,
+        })
+      : openai;
     return new Agent({
       id: 'postiz',
       name: 'postiz',
@@ -87,7 +93,7 @@ export class LoadToolsService {
       )}
 `;
       },
-      model: openai('gpt-5.2'),
+      model: aiProvider(process.env.OPENAI_MODEL || 'gpt-4.1'),
       tools,
       memory: new Memory({
         storage: pStore,
