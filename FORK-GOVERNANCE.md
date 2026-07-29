@@ -161,9 +161,14 @@ Postiz is distributed under MIT license but managed as a **private SaaS product*
 
 Repository: https://github.com/oopen/postiz-app-libre
 
+Features are developed on isolated `feat/*` branches and merged into `dev` for integration.
+
 ### What the fork fixes
 - ✅ `OPENAI_BASE_URL` environment variable with fallback to `https://api.openai.com/v1`
-- ✅ `OPENAI_MODEL` and `OPENAI_IMAGE_MODEL` configurable via environment
+- ✅ `OPENAI_MODEL` configurable via environment
+- ✅ `OPENAI_IMAGE_BASE_URL`, `OPENAI_IMAGE_API_KEY`, `OPENAI_IMAGE_MODEL` — separate image generation endpoint
+- ✅ `OPENAI_CLASSIFIER_BASE_URL`, `OPENAI_CLASSIFIER_API_KEY`, `OPENAI_CLASSIFIER_MODEL` — separate content classifier endpoint
+- ✅ `OPENAI_MAX_TOKENS` — configurable token limit
 - ✅ Support for OpenRouter, Ollama, Groq, Gemini, Anthropic, and any OpenAI-compatible endpoint
 - ✅ Full backward compatibility when env vars are absent
 - ✅ No new npm dependencies
@@ -180,7 +185,5 @@ Repository: https://github.com/oopen/postiz-app-libre
 
 ## 7. REFERENCES
 
-- Full audit: [`README-FORK.md`](./README-FORK.md)
-- Architecture: `POSTIZ_ARCHITECTURE.md`
-- Session context: `SESSION_CONTEXT.md`
+- Full audit: [`FORK-README.md`](./FORK-README.md)
 - Git workflow: [`FORK-GIT-WORKFLOW.md`](./FORK-GIT-WORKFLOW.md)
