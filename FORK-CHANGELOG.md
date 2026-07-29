@@ -35,7 +35,6 @@ Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
 ### Documentation
 
 - `FORK-README.md`: comprehensive audit of upstream governance failures
-- `FORK-GOVERNANCE.md`: 8 ignored issues, 4 blocked PRs, deleted comments, governance analysis
 - `FORK-GIT-WORKFLOW.md`: branch management and sync workflow guide
 - `FORK-CHANGELOG.md`: this file
 

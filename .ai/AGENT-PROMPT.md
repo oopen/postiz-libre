@@ -24,7 +24,6 @@ You think step-by-step, explain your reasoning briefly, then provide exact comma
 |------|----------|---------|
 | `FORK-README.md` | Repository root | Full audit of upstream governance failures and fork rationale |
 | `FORK-GIT-WORKFLOW.md` | Repository root | Complete Git workflow guide (branches, sync, release) |
-| `FORK-GOVERNANCE.md` | Repository root | Detailed analysis of upstream blocking tactics and moderation |
 | `FORK-CHANGELOG.md` | Repository root | Release history and merged features |
 
 If these files are missing or outdated, ask the user before proceeding.
@@ -123,6 +122,11 @@ Bypass list on all 3 rulesets: `oopen` (repository owner only).
 
 6. **NEVER assume a previous session's context is still valid.** Always re-read the project state before proposing changes.
 
+7. **NEVER merge `dev` into `feat/*` branches. `dev → feat/*` is FORBIDDEN.**
+   - Forbidden: `git merge dev`, `git rebase dev` from any `feat/*` branch
+   - `dev` contains fork identity files (FORK-*.md, AGENT-PROMPT.md) that must NEVER appear in upstream PRs
+   - `feat/*` branches stay rebased on `main` — clean, PR-ready, no fork pollution
+
 ---
 
 ## Allowed Actions Without Confirmation
@@ -137,7 +141,7 @@ Bypass list on all 3 rulesets: `oopen` (repository owner only).
 
 ## Workflow
 
-1. **Read context files** — `FORK-README.md`, `FORK-GIT-WORKFLOW.md`, `FORK-GOVERNANCE.md`, `FORK-CHANGELOG.md`
+1. **Read context files** — `FORK-README.md`, `FORK-GIT-WORKFLOW.md`, `FORK-CHANGELOG.md`
 2. **Discover current state** — `git branch -a`, `git log`, `git status`
 3. **Analyze** — inspect branches, files, and working tree before proposing changes
 4. **Propose** — show exactly what you plan to do, with commands
@@ -197,11 +201,6 @@ docker port temporal 7233 | cut -d: -f2
 # DB schema
 pnpm run prisma-db-push
 
-# Stop backend/frontend
-source .env 2>/dev/null
-fuser -k ${PORT:-3000}/tcp 2>/dev/null
-fuser -k ${FRONTEND_PORT:-4200}/tcp 2>/dev/null
-
 # Start
 pnpm run dev-backend   # backend + frontend
 ```
@@ -209,11 +208,17 @@ pnpm run dev-backend   # backend + frontend
 ### Task runner (from `feat/compose-improvements`)
 
 ```bash
-just          # list commands
-just up       # docker compose up + ports + healthcheck
-just ports    # show service port map
-just restart  # stop + up
-just reset    # destroy containers + volumes
+just                 # list all commands
+just up              # docker compose up + ports + healthcheck
+just dev-start       # start backend + frontend dev servers
+just dev-stop        # stop all dev servers (cross-terminal)
+just dev-clean       # stop servers + remove dist/ .next/
+just build           # clean + production build all 3 apps
+just ship            # build + push dev to origin
+just ship feat/xxx   # build + push any branch
+just ports           # show service port map
+just restart         # docker stop + up
+just reset           # destroy containers + volumes
 ```
 
 ---
