@@ -212,6 +212,41 @@ query filter="all":
 	@just _query {{ filter }}
 
 # ==============================================================================
+# Dev Server & Ship
+# ==============================================================================
+
+# Stop the Node.js dev servers (backend + frontend)
+dev-stop:
+	@bash scripts/dev-stop.sh
+
+# Clean: stop dev servers + remove all build artifacts
+dev-clean: dev-stop
+	#!/usr/bin/env bash
+	set -euo pipefail
+	echo "🧹 Cleaning build artifacts..."
+	rm -rf apps/backend/dist apps/frontend/dist apps/frontend/.next apps/orchestrator/dist
+
+# Start dev servers (backend + frontend)
+dev-start:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	source .env 2>/dev/null || true
+	export FRONTEND_PORT
+	export PORT
+	echo "🚀 Starting dev servers on ports ${PORT:-3000}/${FRONTEND_PORT:-4200}..."
+	pnpm run dev-backend
+
+# Production build (all apps)
+build: dev-clean
+	@echo "🔨 Building..."
+	pnpm run build
+
+# Build + push to origin
+ship branch="dev": build
+	@echo "🚀 Pushing to origin/{{ branch }}..."
+	git push origin {{ branch }}
+
+# ==============================================================================
 # Private Helpers (Hidden from 'just --list')
 # ==============================================================================
 
