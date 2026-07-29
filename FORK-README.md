@@ -3,7 +3,7 @@
 ### Project Postiz (gitroomhq/postiz-app) — July 2026
 
 > **Community Fork**: [postiz-app-libre](https://github.com/oopen/postiz-app-libre)  
-> A liberation fork implementing `feat/unlock-ai-vendor-lockin`.
+> A liberation fork. Features merged into `dev` branch for downstream users.
 
 ---
 
@@ -273,11 +273,14 @@ Postiz is distributed under MIT license but managed as a **private SaaS product*
 Given the documented upstream obstruction, the community fork is the only viable path:
 
 **Repository**: https://github.com/oopen/postiz-app-libre  
-**Branch**: `feat/unlock-ai-vendor-lockin`
+**Branches**: `feat/unlock-ai-vendor-lockin`, `feat/compose-improvements` → merged into `dev`
 
 ### What the fork fixes
 - ✅ `OPENAI_BASE_URL` environment variable with fallback to `https://api.openai.com/v1`
-- ✅ `OPENAI_MODEL` and `OPENAI_IMAGE_MODEL` configurable via environment
+- ✅ `OPENAI_MODEL` configurable via environment
+- ✅ `OPENAI_IMAGE_BASE_URL`, `OPENAI_IMAGE_API_KEY`, `OPENAI_IMAGE_MODEL` — separate image generation endpoint
+- ✅ `OPENAI_CLASSIFIER_BASE_URL`, `OPENAI_CLASSIFIER_API_KEY`, `OPENAI_CLASSIFIER_MODEL` — separate content classifier endpoint
+- ✅ `OPENAI_MAX_TOKENS` — configurable token limit
 - ✅ Support for OpenRouter, Ollama, Groq, Gemini, Anthropic, and any OpenAI-compatible endpoint
 - ✅ Full backward compatibility when env vars are absent
 - ✅ No new npm dependencies
@@ -301,7 +304,7 @@ The gitroomhq/postiz-app repository practices **facade governance**:
 - Selective moderation to suppress dissent
 - Zero issues resolved, zero PRs merged on this critical subject
 
-This pattern fully justifies the **local fork approach** (`feat/unlock-ai-vendor-lockin`)  
+This pattern fully justifies the **local fork approach** (features developed independently on `feat/*`, merged into `dev`)  
 rather than waiting for an upstream merge. The team has no intention of unlocking Postiz —  
 it directly contradicts their SaaS business model.
 

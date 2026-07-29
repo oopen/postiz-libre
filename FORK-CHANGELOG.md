@@ -34,10 +34,10 @@ Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
 
 ### Documentation
 
-- `README-FORK.md`: comprehensive audit of upstream governance failures
-- `docs/GOVERNANCE.md`: 8 ignored issues, 4 blocked PRs, deleted comments, governance analysis
+- `FORK-README.md`: comprehensive audit of upstream governance failures
+- `FORK-GOVERNANCE.md`: 8 ignored issues, 4 blocked PRs, deleted comments, governance analysis
 - `FORK-GIT-WORKFLOW.md`: branch management and sync workflow guide
-- `CHANGELOG-LIBRE.md`: this file
+- `FORK-CHANGELOG.md`: this file
 
 [Unreleased]: https://github.com/oopen/postiz-app-libre/compare/v0.1.0-libre...dev
 [v0.1.0-libre]: https://github.com/oopen/postiz-app-libre/releases/tag/v0.1.0-libre
