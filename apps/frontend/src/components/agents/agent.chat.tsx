@@ -70,11 +70,11 @@ const AgentRenderMessage: FC<RenderMessageProps> = (props) => {
   }
 
   if (message?.role === 'assistant' && AssistantMessage) {
-    return <AssistantMessage {...rest} message={message} />;
+    return <AssistantMessage {...(rest as any)} message={message} />;
   }
 
   if (message?.role === 'user' && UserMessage) {
-    return <UserMessage {...rest} message={message} />;
+    return <UserMessage {...(rest as any)} message={message} />;
   }
   return null;
 };
