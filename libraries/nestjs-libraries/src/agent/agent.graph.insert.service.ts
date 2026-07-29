@@ -7,15 +7,16 @@ import { agentCategories } from '@gitroom/nestjs-libraries/agent/agent.categorie
 import { z } from 'zod';
 import { agentTopics } from '@gitroom/nestjs-libraries/agent/agent.topics';
 import { PostsService } from '@gitroom/nestjs-libraries/database/prisma/posts/posts.service';
+import { createRetryableChatModel } from '@gitroom/nestjs-libraries/openai/openai-retry';
 
-const model = new ChatOpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
+const model = createRetryableChatModel(new ChatOpenAI({
+  apiKey: process.env.OPENAI_CLASSIFIER_API_KEY || process.env.OPENAI_API_KEY || 'sk-proj-',
   model: process.env.OPENAI_CLASSIFIER_MODEL || 'gpt-4o-2024-08-06',
   temperature: 0,
-  configuration: process.env.OPENAI_BASE_URL
-    ? { baseURL: process.env.OPENAI_BASE_URL }
+  configuration: (process.env.OPENAI_CLASSIFIER_BASE_URL || process.env.OPENAI_BASE_URL)
+    ? { baseURL: (process.env.OPENAI_CLASSIFIER_BASE_URL || process.env.OPENAI_BASE_URL) }
     : undefined,
-});
+}));
 
 interface WorkflowChannelsState {
   messages: BaseMessage[];
@@ -60,7 +61,7 @@ export class AgentGraphInsertService {
     const structuredOutput = model.withStructuredOutput(category);
     return ChatPromptTemplate.fromTemplate(
       `
-You are an assistant that get a social media post and categorize it into to one from the following categories:
+You are an assistant that get a social media post and categorize it into to one from the following categories. Return the result as a JSON object.
 {categories}
 Here is the post:
 {post}
@@ -78,7 +79,7 @@ Here is the post:
     const structuredOutput = model.withStructuredOutput(topic);
     return ChatPromptTemplate.fromTemplate(
       `
-You are an assistant that get a social media post and categorize it into one of the following topics:
+You are an assistant that get a social media post and categorize it into one of the following topics. Return the result as a JSON object.
 {topics}
 Here is the post:
 {post}
@@ -96,7 +97,7 @@ Here is the post:
     const structuredOutput = model.withStructuredOutput(hook);
     return ChatPromptTemplate.fromTemplate(
       `
-You are an assistant that get a social media post and extract the hook, the hook is usually the first or second of both sentence of the post, but can be in a different place, make sure you don't change the wording of the post use the exact text:
+You are an assistant that get a social media post and extract the hook, the hook is usually the first or second of both sentence of the post, but can be in a different place, make sure you don'\''t change the wording of the post use the exact text. Return the result as a JSON object.
 {post}
     `
     )
