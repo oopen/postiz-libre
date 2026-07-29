@@ -28,58 +28,21 @@ upstream/main (gitroomhq/postiz-app)
 
 ---
 
-## 🚀 Initial Setup (One-Time)
+## 🧰 Dev Commands (justfile)
 
-### 1. Create `dev` from `main`
+All dev lifecycle and pushes go through `just`. Never `git push origin dev` directly.
 
-```bash
-# Switch to main
-git checkout main
-
-# Create dev
-git checkout -b dev
-
-# Push to GitHub
-git push -u origin dev
-```
-
-`dev` is now your working branch. It starts from clean `main`.
-
-### 2. Merge your existing features into `dev`
-
-```bash
-git checkout dev
-
-# Merge first feature
-git merge feat/unlock-ai-vendor-lockin --no-ff
-
-# Merge second feature
-git merge feat/compose-improvements --no-ff
-
-# Push
-git push origin dev
-```
-
-`dev` now contains upstream + your 2 features.
-
-### 3. Commit fork identity files into `dev`
-
-```bash
-git checkout dev
-
-# Create the files:
-# - FORK-README.md
-# - FORK-GOVERNANCE.md
-# - FORK-CHANGELOG.md
-# - FORK-GIT-WORKFLOW.md
-# - .github/workflows/release-libre.yml
-
-git add .
-git commit -m "docs: add fork identity files (FORK-README, FORK-GOVERNANCE, FORK-CHANGELOG, FORK-GIT-WORKFLOW)"
-git push origin dev
-```
-
-> **Rule**: These files live only in `dev`. They will never appear in upstream PRs because PRs originate from `feat/*` (rebased on `main`), not from `dev`.
+| Command | Does |
+|---------|------|
+| `just up` | Start Docker infrastructure |
+| `just dev-start` | Start backend + frontend dev servers |
+| `just dev-stop` | Stop all dev servers (cross-terminal) |
+| `just dev-clean` | Stop servers + remove build artifacts |
+| `just build` | Clean + production build all 3 apps |
+| `just ship` | Build + push `dev` to origin |
+| `just ship feat/xxx` | Build + push any branch |
+| `just ports` | Show Docker port map |
+| `just restart` | Docker stop + up |
 
 ---
 
@@ -119,8 +82,8 @@ git rebase main
 git add <resolved-files>
 git rebase --continue
 
-# Push (force needed because rebase rewrites history)
-git push --force-with-lease origin dev
+# Push (use just ship — it builds before pushing)
+just ship
 ```
 
 ---
@@ -135,7 +98,7 @@ git checkout feat/unlock-ai-vendor-lockin
 git rebase main
 
 # Push
-git push --force-with-lease origin feat/unlock-ai-vendor-lockin
+just ship feat/unlock-ai-vendor-lockin
 
 # Open PR via GitHub:
 #    base : gitroomhq/postiz-app:main
@@ -151,7 +114,7 @@ git push --force-with-lease origin feat/unlock-ai-vendor-lockin
 ```bash
 git checkout dev
 git merge feat/unlock-ai-vendor-lockin --no-ff
-git push origin dev
+just ship
 ```
 
 ---
@@ -161,7 +124,6 @@ git push origin dev
 | File | Branch | Appears in upstream PR? |
 |------|--------|------------------------|
 | `FORK-README.md` | `dev` | ❌ No |
-| `FORK-GOVERNANCE.md` | `dev` | ❌ No |
 | `FORK-CHANGELOG.md` | `dev` | ❌ No |
 | `FORK-GIT-WORKFLOW.md` | `dev` | ❌ No |
 | `.github/workflows/release-libre.yml` | `dev` | ❌ No |
@@ -219,7 +181,7 @@ git push --force-with-lease origin main
 # Move the commit to dev
 git checkout dev
 git cherry-pick <commit-hash>
-git push origin dev
+just ship
 ```
 
 ### "Feature rebase creates conflicts"
