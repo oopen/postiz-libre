@@ -700,5 +700,16 @@
   "watch_tutorial_description": "Watch this short video to learn how to get the most out of Postiz",
   "back": "Back",
   "get_started": "Get Started",
-  "kick_select_channel": "Select Channel"
+  "kick_select_channel": "Select Channel",
+  "generating_image": "Generating image...",
+  "error_ai_quota_title": "Quota Exceeded",
+  "error_ai_quota_message": "Daily API key quota reached. Increase your limit in the provider settings.",
+  "error_ai_context_title": "Context Too Long",
+  "error_ai_context_message": "Start a new conversation.",
+  "error_ai_guardrail_title": "Model Blocked",
+  "error_ai_guardrail_message": "Your provider privacy settings block this model. Adjust them in your account settings.",
+  "error_ai_temporary_title": "Temporary AI Error",
+  "error_ai_generic_title": "AI Error",
+  "retry_action": "Retry",
+  "open_settings": "Settings"
 }
