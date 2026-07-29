@@ -45,7 +45,7 @@ import { hasExtension } from '@gitroom/helpers/utils/has.extension';
 const AgentRenderMessage: FC<RenderMessageProps> = (props) => {
   const { message, UserMessage, AssistantMessage, ...rest } = props;
 
-  if (message?.isResultMessage?.()) {
+  if ((message as any)?.isResultMessage?.()) {
     const msg = message as any;
     if (msg.actionName === 'generateImageTool') {
       let parsed: { path?: string } = {};
