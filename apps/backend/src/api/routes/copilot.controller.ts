@@ -58,7 +58,7 @@ export class CopilotController {
       endpoint: '/copilot/chat',
       runtime: new CopilotRuntime(),
       serviceAdapter: new OpenAIAdapter({
-        openai: openaiClient,
+        openai: openaiClient as any,
         model: MODEL,
       }),
     });
@@ -105,7 +105,7 @@ export class CopilotController {
       runtime,
       // properties: req.body.variables.properties,
       serviceAdapter: new OpenAIAdapter({
-        openai: openaiClient,
+        openai: openaiClient as any,
         model: MODEL,
       }),
     });

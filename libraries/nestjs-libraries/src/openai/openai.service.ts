@@ -3,11 +3,17 @@ import OpenAI from 'openai';
 import { shuffle } from 'lodash';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import { z } from 'zod';
+import { createRetryableClient } from './openai-retry';
 
-const openai = new OpenAI({
+const openai = createRetryableClient(new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
   baseURL: process.env.OPENAI_BASE_URL || undefined,
-});
+}));
+
+const imageOpenai = createRetryableClient(new OpenAI({
+  apiKey: process.env.OPENAI_IMAGE_API_KEY || process.env.OPENAI_API_KEY || 'sk-proj-',
+  baseURL: process.env.OPENAI_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL || undefined,
+}));
 
 const PicturePrompt = z.object({
   prompt: z.string(),
@@ -23,7 +29,7 @@ export class OpenaiService {
     // gpt-image models return base64 (b64_json) and do not accept the
     // `response_format` parameter; third-party providers may return a URL instead.
     const generate = (
-      await openai.images.generate({
+      await imageOpenai.images.generate({
         prompt,
         model: process.env.OPENAI_IMAGE_MODEL || 'chatgpt-image-latest',
         size: isVertical ? '1024x1536' : '1024x1024',
