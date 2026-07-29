@@ -17,7 +17,7 @@ upstream/main (gitroomhq/postiz-app)
         └── feat/compose-improvements
         │
         ▼
-       dev  ← ← ← FORK INTEGRATION BRANCH (to create)
+       dev  ← ← ← FORK INTEGRATION BRANCH (created)
 ```
 
 | Branch | Role | Golden Rule |
@@ -68,13 +68,14 @@ git push origin dev
 git checkout dev
 
 # Create the files:
-# - README-FORK.md
-# - docs/GOVERNANCE.md
-# - CHANGELOG-LIBRE.md
+# - FORK-README.md
+# - FORK-GOVERNANCE.md
+# - FORK-CHANGELOG.md
+# - FORK-GIT-WORKFLOW.md
 # - .github/workflows/release-libre.yml
 
 git add .
-git commit -m "docs: add fork identity files (README-FORK, GOVERNANCE, CHANGELOG)"
+git commit -m "docs: add fork identity files (FORK-README, FORK-GOVERNANCE, FORK-CHANGELOG, FORK-GIT-WORKFLOW)"
 git push origin dev
 ```
 
@@ -141,7 +142,7 @@ git push --force-with-lease origin feat/unlock-ai-vendor-lockin
 #    compare : oopen/postiz-app-libre:feat/unlock-ai-vendor-lockin
 ```
 
-> **Important**: The upstream PR contains ONLY the feature commits. No README-FORK.md, no fork docs.
+> **Important**: The upstream PR contains ONLY the feature commits. No FORK-README.md, no fork docs.
 
 ---
 
@@ -159,12 +160,13 @@ git push origin dev
 
 | File | Branch | Appears in upstream PR? |
 |------|--------|------------------------|
-| `README-FORK.md` | `dev` | ❌ No |
-| `docs/GOVERNANCE.md` | `dev` | ❌ No |
-| `CHANGELOG-LIBRE.md` | `dev` | ❌ No |
+| `FORK-README.md` | `dev` | ❌ No |
+| `FORK-GOVERNANCE.md` | `dev` | ❌ No |
+| `FORK-CHANGELOG.md` | `dev` | ❌ No |
+| `FORK-GIT-WORKFLOW.md` | `dev` | ❌ No |
 | `.github/workflows/release-libre.yml` | `dev` | ❌ No |
 | `libraries/.../openai.service.ts` (patched) | `feat/unlock-ai-vendor-lockin` | ✅ Yes |
-| `docker-compose.custom.yaml` | `feat/compose-improvements` | ✅ Yes |
+| `docker-compose.dev.yaml` | `feat/compose-improvements` | ✅ Yes |
 
 ---
 
