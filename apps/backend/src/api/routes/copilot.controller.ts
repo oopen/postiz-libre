@@ -23,12 +23,20 @@ import { Request, Response } from 'express';
 import { RequestContext } from '@mastra/core/di';
 import { CheckPolicies } from '@gitroom/backend/services/auth/permissions/permissions.ability';
 import { AuthorizationActions, Sections } from '@gitroom/backend/services/auth/permissions/permission.exception.class';
+import OpenAI from 'openai';
 
 export type ChannelsContext = {
   integrations: string;
   organization: string;
   ui: string;
 };
+
+const openaiClient = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || '',
+  baseURL: process.env.OPENAI_BASE_URL || undefined,
+});
+
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4.1';
 
 @Controller('/copilot')
 export class CopilotController {
@@ -50,7 +58,8 @@ export class CopilotController {
       endpoint: '/copilot/chat',
       runtime: new CopilotRuntime(),
       serviceAdapter: new OpenAIAdapter({
-        model: 'gpt-4.1',
+        openai: openaiClient as any,
+        model: MODEL,
       }),
     });
 
@@ -96,7 +105,8 @@ export class CopilotController {
       runtime,
       // properties: req.body.variables.properties,
       serviceAdapter: new OpenAIAdapter({
-        model: 'gpt-4.1',
+        openai: openaiClient as any,
+        model: MODEL,
       }),
     });
 

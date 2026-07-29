@@ -19,6 +19,7 @@ import { TypedSearchAttributes } from '@temporalio/common';
 import {
   organizationId,
 } from '@gitroom/nestjs-libraries/temporal/temporal.search.attribute';
+import { createRetryableChatModel, withRetryDalle } from '@gitroom/nestjs-libraries/openai/openai-retry';
 const parser = new Parser();
 
 interface WorkflowChannelsState {
@@ -35,15 +36,19 @@ interface WorkflowChannelsState {
   };
 }
 
-const model = new ChatOpenAI({
+const model = createRetryableChatModel(new ChatOpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'gpt-4.1',
+  model: process.env.OPENAI_MODEL || 'gpt-4.1',
   temperature: 0.7,
-});
+  configuration: process.env.OPENAI_BASE_URL
+    ? { baseURL: process.env.OPENAI_BASE_URL }
+    : undefined,
+}));
 
 const dalle = new DallEAPIWrapper({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'chatgpt-image-latest',
+  apiKey: process.env.OPENAI_IMAGE_API_KEY || process.env.OPENAI_API_KEY || 'sk-proj-',
+  model: process.env.OPENAI_IMAGE_MODEL || 'chatgpt-image-latest',
+  ...(process.env.OPENAI_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL ? { baseUrl: (process.env.OPENAI_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL) } : {}),
 });
 
 const generateContent = z.object({
@@ -257,7 +262,7 @@ export class AutopostService {
           content: state.load.description || state.description,
         });
 
-    const image = await dalle.invoke(generatedTextToBeSentToDallE);
+    const image = await withRetryDalle(generatedTextToBeSentToDallE, dalle);
 
     return { ...state, image };
   }

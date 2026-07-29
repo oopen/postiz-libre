@@ -13,13 +13,16 @@ import { CopilotChat, CopilotKitCSSProperties } from '@copilotkit/react-ui';
 import {
   InputProps,
   UserMessageProps,
+  RenderMessageProps,
 } from '@copilotkit/react-ui/dist/components/chat/props';
 import { Input } from '@gitroom/frontend/components/agents/agent.input';
 import { useModals } from '@gitroom/frontend/components/layout/new-modal';
 import {
   CopilotKit,
   useCopilotAction,
+  useCopilotChat,
   useCopilotMessagesContext,
+  useCopilotContext,
 } from '@copilotkit/react-core';
 import {
   MediaPortal,
@@ -38,6 +41,43 @@ import { makeId } from '@gitroom/nestjs-libraries/services/make.is';
 import { ExistingDataContextProvider } from '@gitroom/frontend/components/launches/helpers/use.existing.data';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { hasExtension } from '@gitroom/helpers/utils/has.extension';
+
+const AgentRenderMessage: FC<RenderMessageProps> = (props) => {
+  const { message, UserMessage, AssistantMessage, ...rest } = props;
+
+  if (message?.isResultMessage?.()) {
+    const msg = message as any;
+    if (msg.actionName === 'generateImageTool') {
+      let parsed: { path?: string } = {};
+      try {
+        parsed =
+          typeof msg.result === 'string' ? JSON.parse(msg.result) : msg.result;
+      } catch {
+        return null;
+      }
+      if (parsed.path) {
+        return (
+          <div className="flex justify-start px-4 py-2">
+            <img
+              src={parsed.path}
+              alt="Generated"
+              className="w-full rounded-lg border border-custom6"
+            />
+          </div>
+        );
+      }
+    }
+  }
+
+  if (message?.role === 'assistant' && AssistantMessage) {
+    return <AssistantMessage {...rest} message={message} />;
+  }
+
+  if (message?.role === 'user' && UserMessage) {
+    return <UserMessage {...rest} message={message} />;
+  }
+  return null;
+};
 
 export const AgentChat: FC = () => {
   const { backendUrl } = useVariables();
@@ -69,7 +109,7 @@ export const AgentChat: FC = () => {
       >
         <div className="absolute left-0 w-full h-full pb-[20px]">
           <CopilotChat
-            className="w-full h-full"
+            className="w-full h-full [&_img]:max-w-full [&_img]:w-auto [&_img]:h-auto"
             labels={{
               title: t('your_assistant', 'Your Assistant'),
               initial: t('agent_welcome_message', `Hello, I am your Postiz agent 🙌🏻.
@@ -85,6 +125,7 @@ You can also use me as an MCP Server, check Settings >> Public API
             }}
             UserMessage={Message}
             Input={NewInput}
+            RenderMessage={AgentRenderMessage}
           />
         </div>
       </div>
@@ -229,6 +270,76 @@ Use the following social media platforms: ${JSON.stringify(
 
 export const Hooks: FC = () => {
   const modals = useModals();
+  const context = useCopilotContext();
+  const t = useT();
+  const { runChatCompletion } = useCopilotChat();
+  const [errorBanners, setErrorBanners] = useState<
+    { id: string; message: string; retryable: boolean; title: string; url: string | null }[]
+  >([]);
+  const lastErrorRef = useRef('');
+
+  const addError = useCallback((title: string, message: string, retryable: boolean, url: string | null) => {
+    const key = title + message;
+    if (lastErrorRef.current === key) return;
+    lastErrorRef.current = key;
+    setErrorBanners((prev) => [
+      ...prev,
+      { id: Date.now().toString(), title, message, retryable, url },
+    ].slice(-3));
+  }, []);
+
+  const retryLastMessage = useCallback(() => {
+    lastErrorRef.current = '';
+    setErrorBanners([]);
+    runChatCompletion();
+  }, [runChatCompletion]);
+
+  useEffect(() => {
+    const orig = console.error;
+    console.error = (...args: any[]) => {
+      orig.apply(console, args);
+      const msg = args.join(' ');
+      if (!msg.includes('AI_APICallError') && !msg.includes('Provider returned error')) return;
+
+      const urlMatch = msg.match(/https:\/\/[^\s)]+/);
+      const extractedUrl = urlMatch ? urlMatch[0] : null;
+
+      const isQuota = /credit|quota|402|insufficient|only afford|daily limit|key limit/i.test(msg);
+      const isCtx = /context.*length|too many tokens/i.test(msg);
+      const isGuard = /guardrail|endpoint.*available|data policy/i.test(msg);
+      const isRetry = /rate.limit|429/i.test(msg);
+
+      if (isQuota) {
+        const creditsMatch = msg.match(/only afford (\d+)/);
+        const creditsStr = creditsMatch ? creditsMatch[1] : 'unknown';
+        addError(
+          `\uD83D\uDCB3 ${t('error_ai_quota_title', 'Quota Exceeded')}`,
+          t('error_ai_quota_message', 'Daily API key quota reached. Increase your limit in the provider settings.'),
+          true,
+          extractedUrl
+        );
+      } else if (isCtx) {
+        addError(
+          `\u{1F4CF} ${t('error_ai_context_title', 'Context Too Long')}`,
+          t('error_ai_context_message', 'Start a new conversation.'),
+          false, null);
+      } else if (isGuard) {
+        addError(
+          `\u{1F512} ${t('error_ai_guardrail_title', 'Model Blocked')}`,
+          t('error_ai_guardrail_message', 'Your provider privacy settings block this model. Adjust them in your account settings.'),
+          false, extractedUrl);
+      } else if (isRetry) {
+        addError(
+          `\u23F3 ${t('error_ai_temporary_title', 'Temporary AI Error')}`,
+          msg.substring(0, 200), true, null);
+      } else {
+        addError(
+          `\u{1F527} ${t('error_ai_generic_title', 'AI Error')}`,
+          msg.substring(0, 200), true, null);
+      }
+    };
+    return () => { console.error = orig; };
+  }, []);
 
   useCopilotAction({
     name: 'manualPosting',
@@ -296,7 +407,68 @@ export const Hooks: FC = () => {
       return null;
     },
   });
-  return null;
+  if (errorBanners.length === 0) return null;
+  return (
+    <div className="absolute bottom-[80px] left-1/2 -translate-x-1/2 flex flex-col gap-2 w-[95%] max-w-lg z-10">
+      {errorBanners.map((err) => {
+        const isQuota = err.title?.includes('💳');
+        return (
+          <div
+            key={err.id}
+            className={`rounded-xl px-5 py-4 shadow-lg backdrop-blur-sm ${
+              isQuota
+                ? 'bg-red-950/80 border border-red-800 text-red-100'
+                : 'bg-amber-950/80 border border-amber-800 text-amber-100'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl shrink-0">{err.title.split(' ')[0]}</span>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm">{err.title.substring(err.title.indexOf(' ') + 1)}</div>
+                <div className={`text-xs mt-0.5 ${isQuota ? 'text-red-300' : 'text-amber-300'}`}>{err.message}</div>
+              </div>
+              <button
+                className={`text-lg leading-none opacity-60 hover:opacity-100 shrink-0 ${isQuota ? 'text-red-400 hover:text-red-200' : 'text-amber-400 hover:text-amber-200'}`}
+                onClick={() => setErrorBanners((prev) => prev.filter((e) => e.id !== err.id))}
+              >
+                ×
+              </button>
+            </div>
+            {(err.retryable || err.url) && (
+              <div className="flex gap-2 mt-3 justify-end">
+                {err.url && (
+                  <a
+                    href={err.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      isQuota
+                        ? 'bg-red-800/60 hover:bg-red-700/80 text-red-100'
+                        : 'bg-amber-800/60 hover:bg-amber-700/80 text-amber-100'
+                    }`}
+                  >
+                    ⚙️ {t('open_settings', 'Settings')}
+                  </a>
+                )}
+                {err.retryable && (
+                  <button
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      isQuota
+                        ? 'bg-red-800/60 hover:bg-red-700/80 text-red-100'
+                        : 'bg-amber-800/60 hover:bg-amber-700/80 text-amber-100'
+                    }`}
+                    onClick={retryLastMessage}
+                  >
+                    🔄 {t('retry_action', 'Retry')}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 };
 
 const OpenModal: FC<{

@@ -3,10 +3,17 @@ import OpenAI from 'openai';
 import { shuffle } from 'lodash';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import { z } from 'zod';
+import { createRetryableClient } from './openai-retry';
 
-const openai = new OpenAI({
+const openai = createRetryableClient(new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-});
+  baseURL: process.env.OPENAI_BASE_URL || undefined,
+}));
+
+const imageOpenai = createRetryableClient(new OpenAI({
+  apiKey: process.env.OPENAI_IMAGE_API_KEY || process.env.OPENAI_API_KEY || 'sk-proj-',
+  baseURL: process.env.OPENAI_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL || undefined,
+}));
 
 const PicturePrompt = z.object({
   prompt: z.string(),
@@ -19,24 +26,34 @@ const VoicePrompt = z.object({
 @Injectable()
 export class OpenaiService {
   async generateImage(prompt: string, isVertical = false) {
-    // gpt-image models always return base64 (b64_json) and do not accept the
-    // `response_format` parameter, unlike the deprecated dall-e-3.
+    // gpt-image models return base64 (b64_json) and do not accept the
+    // `response_format` parameter; third-party providers may return a URL instead.
     const generate = (
-      await openai.images.generate({
+      await imageOpenai.images.generate({
         prompt,
-        model: 'chatgpt-image-latest',
+        model: process.env.OPENAI_IMAGE_MODEL || 'chatgpt-image-latest',
         size: isVertical ? '1024x1536' : '1024x1024',
       })
     ).data[0];
 
-    return generate.b64_json;
+    if (generate.b64_json) {
+      return generate.b64_json;
+    }
+
+    if (generate.url) {
+      const response = await fetch(generate.url);
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer).toString('base64');
+    }
+
+    return undefined;
   }
 
   async generatePromptForPicture(prompt: string) {
     return (
       (
         await openai.chat.completions.parse({
-          model: 'gpt-4.1',
+          model: process.env.OPENAI_MODEL || 'gpt-4.1',
           messages: [
             {
               role: 'system',
@@ -57,7 +74,7 @@ export class OpenaiService {
     return (
       (
         await openai.chat.completions.parse({
-          model: 'gpt-4.1',
+          model: process.env.OPENAI_MODEL || 'gpt-4.1',
           messages: [
             {
               role: 'system',
@@ -91,7 +108,7 @@ export class OpenaiService {
           ],
           n: 5,
           temperature: 1,
-          model: 'gpt-4.1',
+          model: process.env.OPENAI_MODEL || 'gpt-4.1',
         }),
         openai.chat.completions.create({
           messages: [
@@ -107,7 +124,7 @@ export class OpenaiService {
           ],
           n: 5,
           temperature: 1,
-          model: 'gpt-4.1',
+          model: process.env.OPENAI_MODEL || 'gpt-4.1',
         }),
       ])
     ).flatMap((p) => p.choices);
@@ -145,7 +162,7 @@ export class OpenaiService {
           content,
         },
       ],
-      model: 'gpt-4.1',
+      model: process.env.OPENAI_MODEL || 'gpt-4.1',
     });
 
     const { content: articleContent } = websiteContent.choices[0].message;
@@ -165,7 +182,7 @@ export class OpenaiService {
     const posts =
       (
         await openai.chat.completions.parse({
-          model: 'gpt-4.1',
+          model: process.env.OPENAI_MODEL || 'gpt-4.1',
           messages: [
             {
               role: 'system',
@@ -198,7 +215,7 @@ export class OpenaiService {
               return (
                 (
                   await openai.chat.completions.parse({
-                    model: 'gpt-4.1',
+                    model: process.env.OPENAI_MODEL || 'gpt-4.1',
                     messages: [
                       {
                         role: 'system',
@@ -234,7 +251,7 @@ export class OpenaiService {
         const parse =
           (
             await openai.chat.completions.parse({
-              model: 'gpt-4.1',
+              model: process.env.OPENAI_MODEL || 'gpt-4.1',
               messages: [
                 {
                   role: 'system',

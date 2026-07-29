@@ -16,21 +16,26 @@ import { MediaService } from '@gitroom/nestjs-libraries/database/prisma/media/me
 import { UploadFactory } from '@gitroom/nestjs-libraries/upload/upload.factory';
 import { GeneratorDto } from '@gitroom/nestjs-libraries/dtos/generator/generator.dto';
 import { generationError } from '@gitroom/nestjs-libraries/openai/generation.error';
+import { createRetryableChatModel, withRetryDalle } from '@gitroom/nestjs-libraries/openai/openai-retry';
 
 const tools = !process.env.TAVILY_API_KEY
   ? []
   : [new TavilySearch({ maxResults: 3 })];
 const toolNode = new ToolNode(tools);
 
-const model = new ChatOpenAI({
+const model = createRetryableChatModel(new ChatOpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'gpt-4.1',
+  model: process.env.OPENAI_MODEL || 'gpt-4.1',
   temperature: 0.7,
-});
+  configuration: process.env.OPENAI_BASE_URL
+    ? { baseURL: process.env.OPENAI_BASE_URL }
+    : undefined,
+}));
 
 const dalle = new DallEAPIWrapper({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'chatgpt-image-latest',
+  apiKey: process.env.OPENAI_IMAGE_API_KEY || process.env.OPENAI_API_KEY || 'sk-proj-',
+  model: process.env.OPENAI_IMAGE_MODEL || 'chatgpt-image-latest',
+  ...(process.env.OPENAI_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL ? { baseUrl: (process.env.OPENAI_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL) } : {}),
 });
 
 interface WorkflowChannelsState {
@@ -322,7 +327,7 @@ export class AgentGraphService {
     try {
       const newContent = await Promise.all(
         (state.content || []).map(async (p) => {
-          const image = await dalle.invoke(p.prompt!);
+          const image = await withRetryDalle(p.prompt!, dalle);
           return {
             ...p,
             image,

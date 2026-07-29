@@ -1,4 +1,5 @@
 import { HttpException } from '@nestjs/common';
+import { mapApiError } from './error-display';
 
 // e.g. "400 Your request was rejected by the safety system, safety_violations=[sexual]"
 const SAFETY_VIOLATIONS_REGEX = /safety_violations=\[([^\]]*)\]/i;
@@ -27,6 +28,7 @@ export function generationError(err: any): HttpException {
   const message: string =
     err?.error?.message || err?.message || String(err || '');
 
+  // Check safety violations first (before generic LLM error mapping).
   if (SAFETY_MESSAGE_REGEX.test(message)) {
     const categories = message.match(SAFETY_VIOLATIONS_REGEX)?.[1]?.trim();
     const detail = categories ? ` Flagged categories: ${categories}.` : '';
@@ -36,7 +38,12 @@ export function generationError(err: any): HttpException {
     );
   }
 
-  // Not a recognized safety rejection (e.g. an invalid-parameter 400) — return
-  // a generic message rather than mislabeling it as a content-safety issue.
-  return new HttpException('AI generation failed, please try again later.', 500);
+  // Map other errors (rate-limit, quota, context, schema, etc.) using
+  // the centralized error-display utility.
+  const mapped = mapApiError(err);
+  const statusMap: Record<string, number> = {
+    rate_limit: 429, quota: 402, context_length: 400, guardrail: 400,
+    schema: 400, bad_request: 400, auth: 401, server: 500, connection: 503,
+  };
+  return new HttpException(mapped.message, statusMap[mapped.code] || 500);
 }
