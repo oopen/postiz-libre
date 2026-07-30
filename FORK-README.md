@@ -10,7 +10,7 @@
 ## 1. CONTEXT
 
 Postiz is an open-source multi-platform social media scheduling and publishing tool,  
-developed by Gitroom (formerly GitroomHQ). The code is MIT-licensed and available on GitHub.  
+developed by Gitroom (formerly GitroomHQ). The code is AGPL-3.0-licensed and available on GitHub.  
 However, the upstream team manages the repository as a private SaaS product, passively  
 blocking any evolution that would reduce dependency on OpenAI or facilitate independent  
 self-hosting.
@@ -244,7 +244,7 @@ This is not legitimate spam moderation, this is **cleaning up an insistent contr
 | **Indifference despite completed work** | #1648: complete implementation provided, ignored | Show that even free contribution is unwelcome |
 
 ### 5.3 The Underlying Economic Model
-Postiz is distributed under MIT license but managed as a **private SaaS product**:
+Postiz is distributed under AGPL-3.0 but managed as a **private SaaS product**:
 - The hosted (paid) offering depends on OpenAI integration
 - Allowing AI independence would reduce the perceived value of the SaaS offering
 - Competent self-hosters are potential lost customers
@@ -298,7 +298,7 @@ Given the documented upstream obstruction, the community fork is the only viable
 ## 8. CONCLUSION
 
 The gitroomhq/postiz-app repository practices **facade governance**:
-- MIT license on paper
+- AGPL-3.0 license on paper
 - Active technical lock-in on AI
 - Systematic blocking of community contributions
 - Selective moderation to suppress dissent

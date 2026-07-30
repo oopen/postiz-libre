@@ -1,12 +1,12 @@
-# FORK-TODO — postiz-app-libre
+# FORK-ROADMAP — postiz-app-libre
 
-> What's next for the fork. Updated from `dev`. Priority: 🔴 high → 🟡 medium → 🟢 low.
+> Living roadmap. Updated from `dev`. Priority: 🔴 high → 🟡 medium → 🟢 low.
 
 ## Now
 
 | Tâche | Depuis |
 |-------|--------|
-| feat/compose-improvements — final review | 2026-07-30 |
+| 🔴 Clean repo: remove 20+ upstream files, rename TODO→ROADMAP, fix license docs | 2026-07-30 |
 
 ## Backlog
 
@@ -19,9 +19,11 @@
 | 🟡 | Multi-env: test-specific seeding/health checks | v0.3 | test.yaml | AI |
 | 🟢 | `.env.example` — document Docker vs host mode | v0.3 | — | AI |
 | 🟢 | PR `feat/unlock-ai-vendor-lockin` → upstream | — | Upstream sync | Human |
+| 🟢 | Fork-specific CODE_OF_CONDUCT.md + CONTRIBUTING.md | v0.3 | — | AI |
 
 ## Done
 
+- `feat/compose-improvements` — final review + repo cleanup (2026-07-30)
 - `v0.1.0-libre` — AI vendor lock-in unlocked + compose improvements (2026-07-29)
 
 ## Sync log
