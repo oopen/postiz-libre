@@ -1,4 +1,4 @@
-# Project Management — postiz-app-libre
+# Project Management — postiz-libre
 
 > Survival guide for maintaining a clean fork, syncable with upstream, and productive.
 
@@ -11,7 +11,7 @@ upstream/main (gitroomhq/postiz-app)
         │
         │  ← regular sync
         ▼
-    main (oopen/postiz-app-libre)  ← CLEAN, upstream mirror
+    main (oopen/postiz-libre)  ← CLEAN, upstream mirror
         │
         ├── feat/unlock-ai-vendor-lockin
         └── feat/compose-improvements
@@ -106,7 +106,7 @@ just push feat/unlock-ai-vendor-lockin
 
 # Open PR via GitHub:
 #    base : gitroomhq/postiz-app:main
-#    compare : oopen/postiz-app-libre:feat/unlock-ai-vendor-lockin
+#    compare : oopen/postiz-libre:feat/unlock-ai-vendor-lockin
 ```
 
 > **Important**: The upstream PR contains ONLY the feature commits. No FORK-README.md, no fork docs.
@@ -221,4 +221,4 @@ git rebase --abort
 
 ---
 
-*Document for postiz-app-libre — July 2026*
+*Document for postiz-libre — July 2026*

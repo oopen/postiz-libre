@@ -1,4 +1,4 @@
-# Postiz — Libre Fork
+# Postiz Libre
 
 Community fork breaking the OpenAI vendor lock-in. Set `OPENAI_BASE_URL` and use
 any backend — LocalAI, Ollama, OpenRouter, Groq, Gemini, Anthropic, or your own.

@@ -2,7 +2,7 @@
 ## OpenAI Lock-in, Community Governance, and Selective Moderation
 ### Project Postiz (gitroomhq/postiz-app) — July 2026
 
-> **Community Fork**: [postiz-app-libre](https://github.com/oopen/postiz-app-libre)  
+> **Community Fork**: [postiz-libre](https://github.com/oopen/postiz-libre)  
 > A liberation fork. Features merged into `dev` branch for downstream users.
 
 ---
@@ -268,11 +268,11 @@ Postiz is distributed under AGPL-3.0 but managed as a **private SaaS product**:
 
 ---
 
-## 7. THE FORK SOLUTION: postiz-app-libre
+## 7. THE FORK SOLUTION: postiz-libre
 
 Given the documented upstream obstruction, the community fork is the only viable path:
 
-**Repository**: https://github.com/oopen/postiz-app-libre  
+**Repository**: https://github.com/oopen/postiz-libre  
 **Branches**: `feat/unlock-ai-vendor-lockin`, `feat/compose-improvements` → merged into `dev`
 
 ### What the fork fixes
@@ -308,7 +308,7 @@ This pattern fully justifies the **local fork approach** (features developed ind
 rather than waiting for an upstream merge. The team has no intention of unlocking Postiz —  
 it directly contradicts their SaaS business model.
 
-The [postiz-app-libre](https://github.com/oopen/postiz-app-libre) fork exists to correct this  
+The [postiz-libre](https://github.com/oopen/postiz-libre) fork exists to correct this  
 structural failure and restore genuine open-source governance.
 
 ---
