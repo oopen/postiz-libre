@@ -190,36 +190,30 @@ If you need to know which environment variables exist, read `.env.example` inste
 ### Dev commands
 
 ```bash
-# Infrastructure
-docker compose -f docker-compose.dev.yaml up -d
+# All-in-one dev startup (infra + backend + frontend + port discovery)
+just up
 
-# After docker up: sync dynamic ports into .env
-docker port postiz-postgres 5432 | cut -d: -f2
-docker port postiz-redis 6379 | cut -d: -f2
-docker port temporal 7233 | cut -d: -f2
-
-# DB schema
-pnpm run prisma-db-push
-
-# Start
-pnpm run dev-backend   # backend + frontend
+# Or step by step:
+just compose up -d      # infra + backend only
+just compose logs -f    # tail logs
+just compose stop       # stop everything
 ```
 
 ### Task runner (from `feat/compose-improvements`)
 
 ```bash
 just                 # list all commands
-just up              # Docker up + ports + healthcheck + app-start
-just stop            # app-stop + freeze containers
-just app-start       # start backend + frontend app servers
-just app-stop        # stop all app servers (cross-terminal)
-just app-clean       # stop servers + remove dist/ .next/
-just build           # clean + production build all 3 apps
+just up              # start everything (Docker infra + app servers)
+just stop            # stop everything
+just app-logs        # tail app server logs (backend + frontend)
+just restart         # reboot everything
+just reset           # destroy containers + volumes, then fresh start
+just purge           # total purge: containers + volumes + images
+just build           # production build in Docker
+just build-purge     # clean build volumes only
 just push            # build + push dev to origin
 just push feat/xxx   # build + push any branch
 just ports           # show service port map
-just restart         # reboot everything
-just reset           # destroy containers + volumes
 ```
 
 ---

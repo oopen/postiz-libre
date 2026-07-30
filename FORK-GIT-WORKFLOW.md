@@ -34,17 +34,16 @@ All dev lifecycle and pushes go through `just`. Never `git push origin dev` dire
 
 | Command | Does |
 |---------|------|
-| `just up` | Start Docker infrastructure + app servers |
-| `just stop` | Stop app servers + freeze Docker containers |
-| `just app-start` | Start backend + frontend app servers |
-| `just app-stop` | Stop all app servers (cross-terminal) |
-| `just app-clean` | Stop servers + remove build artifacts |
-| `just build` | Clean + production build all 3 apps |
-| `just push` | Build + push `dev` to origin |
-| `just push feat/xxx` | Build + push any branch |
-| `just ports` | Show Docker port map |
+| `just up` | Start everything (Docker infra + app servers) |
+| `just stop` | Stop everything |
+| `just app-logs` | Tail app server logs (backend + frontend) |
 | `just restart` | Reboot everything |
-| `just reset` | Destroy containers + volumes |
+| `just reset` | Destroy containers + volumes, then fresh start |
+| `just purge` | TOTAL PURGE: containers + volumes + images |
+| `just build` | Production build in Docker |
+| `just build-purge` | Clean build volumes only |
+| `just push [branch]` | Build + push branch to origin (default: dev) |
+| `just ports` | Show Docker port map |
 
 ---
 
