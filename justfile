@@ -71,23 +71,29 @@ compose *args:
 up:
 	#!/usr/bin/env bash
 	set -euo pipefail
+
 	# Stop stale frontend from previous runs
 	just compose --profile frontend stop postiz-frontend 2>/dev/null || true
+
 	# Phase 1: start infrastructure and backend
 	just compose up -d --remove-orphans
+
 	# Phase 2: wait for backend health (DB, Redis, Temporal)
 	echo "⏳ Waiting for backend..."
 	until just backend-health > /dev/null 2>&1; do sleep 2; done
 	BACKEND_PORT=$(just compose port postiz-backend 3000 | cut -d: -f2)
 	echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:$BACKEND_PORT" > apps/frontend/.env.local
 	echo "✅ Backend ready at localhost:$BACKEND_PORT"
+
 	# Phase 3: start frontend
 	just compose --profile frontend up -d --remove-orphans
+
 	# Phase 4: wait for frontend health
 	echo "⏳ Waiting for frontend..."
 	until just frontend-health > /dev/null 2>&1; do sleep 2; done
 	FRONTEND_PORT=$(just compose port postiz-frontend 4200 | cut -d: -f2)
 	echo "✅ Frontend ready at localhost:$FRONTEND_PORT"
+	
 	# Status display
 	just ports
 	just check-ports
