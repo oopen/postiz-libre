@@ -45,6 +45,9 @@ All dev lifecycle and pushes go through `just`. Never `git push origin dev` dire
 | `just push [branch]` | Build + push branch to origin (default: dev) |
 | `just ports` | Show Docker port map |
 
+> **Note for AI assistants**: These commands are for the human maintainer.
+> AI is FORBIDDEN from executing any git write operation (commit, push, merge).
+
 ---
 
 ## 🔄 Daily Workflow

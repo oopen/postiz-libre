@@ -105,14 +105,14 @@ Bypass list on all 3 rulesets: `oopen` (repository owner only).
 
 ## Absolute Safety Rules — NO EXCEPTIONS
 
-1. **NEVER push to any remote without explicit written confirmation from the user.**
-   - Forbidden: `git push`, `git push --force`, `git push --force-with-lease`
-   - Forbidden: any automated push via scripts, CI, or tools
-   - Before any push, you MUST ask: "Confirm push to [branch]?" and wait for an explicit "yes"
+1. **GIT PUSH IS FORBIDDEN.**
+   - You must NEVER execute `git push`, `just push`, or any git remote write.
+   - The user manages ALL pushes personally. Do not ask to push. Do not suggest pushing.
 
-2. **NEVER create a commit without explicit written confirmation from the user.**
-   - Forbidden: `git commit`, `git commit --amend`, `git merge --no-ff` (creates a commit)
-   - Before any commit, you MUST ask: "Confirm commit with message '[message]'?" and wait for an explicit "yes"
+2. **GIT COMMIT IS FORBIDDEN.**
+   - You must NEVER execute `git commit`, `git add`, `git merge --no-ff`, or `git stash`.
+   - Present a suggested commit message in a code block for the user to review.
+   - The user stages, commits, and pushes personally after code review.
 
 3. **NEVER modify `.gitignore`, branch rulesets, or repository settings without explicit confirmation.**
 
@@ -127,6 +127,11 @@ Bypass list on all 3 rulesets: `oopen` (repository owner only).
    - `dev` contains fork identity files (FORK-*.md, AGENT-PROMPT.md) that must NEVER appear in upstream PRs
    - `feat/*` branches stay rebased on `main` — clean, PR-ready, no fork pollution
 
+8. **ALL git write operations (add, commit, merge, push, stash, tag) are FORBIDDEN.**
+   - Never use `git add`, `git commit`, `git merge`, `git push`, `git stash` or `just push`.
+   - Stop coding when done. Show the diff. Suggest a commit message. The user handles git.
+   - Files can be created/edited but left uncommitted for review.
+
 ---
 
 ## Allowed Actions Without Confirmation
@@ -134,8 +139,9 @@ Bypass list on all 3 rulesets: `oopen` (repository owner only).
 - `git status`, `git log`, `git diff`, `git show`, `git branch -a`, `git remote -v`
 - `git fetch`, `git pull` (read-only operations)
 - Reading files, analyzing code, suggesting changes
-- Writing files to the working tree (uncommitted)
+- Creating and editing files in the working tree (uncommitted — never staging)
 - Docker build commands (local only, no push)
+- Suggesting commit messages (NEVER executing commits)
 
 ---
 
@@ -145,8 +151,10 @@ Bypass list on all 3 rulesets: `oopen` (repository owner only).
 2. **Discover current state** — `git branch -a`, `git log`, `git status`
 3. **Analyze** — inspect branches, files, and working tree before proposing changes
 4. **Propose** — show exactly what you plan to do, with commands
-5. **Wait for confirmation** — the user must explicitly approve before any commit or push
-6. **Execute** — only after an explicit "yes"
+5. **Wait for confirmation** — the user must explicitly approve before code changes
+6. **Execute** — only after an explicit "yes". Write code, test, show diff.
+7. **Suggest commit message** — present a commit message suggestion for user review.
+8. **STOP** — user reviews code, commits, and pushes. Do NOT execute git commands.
 
 ---
 
@@ -166,6 +174,30 @@ If you need to know which environment variables exist, read `.env.example` inste
 - Minimize diff size — smaller diffs = easier upstream sync and cleaner PRs
 - If upstream does something a certain way, match it unless the feature explicitly requires divergence
 - Every line of code that deviates from upstream must be justified by the feature being implemented
+
+### Upstream PR guidelines
+
+**For feat/* PRs targeting upstream:**
+
+- Only include files relevant to the feature. No fork identity (FORK-*.md, AGENT-PROMPT.md, .ai/, .github/workflows/release-libre.yml).
+- Use existing patterns, file structure, and naming conventions from the original codebase.
+- Do NOT introduce new dependencies without strong justification.
+- Keep diff size minimal — smaller diffs are easier for upstream to review and merge.
+
+### POSIX compliance
+
+**Prefer POSIX-compliant commands and shell syntax.**
+
+- Use `/bin/sh`-compatible syntax (`#!/bin/sh`) when possible.
+- Avoid GNU-only flags, exotic commands, or non-standard tools.
+- If a bash-ism or non-POSIX feature is unavoidable, propose it to the user for explicit approval.
+- Examples:
+  - Use `grep` not `rg` (ripgrep may not be installed).
+  - Use `sed` not `gsed`.
+  - Use `${var:-default}` POSIX parameter expansion.
+  - Avoid `/dev/tcp` (bash-only); prefer `curl` or `nc`.
+  - Avoid `jq`, `yq`, `python3 -c` for JSON unless strictly necessary — use `grep`/`sed`/`awk` instead.
+- **Existing code using bash-isms is grandfathered** — do not refactor it just to satisfy POSIX. This guideline applies to new code only.
 
 ### i18n (Translations)
 
@@ -206,13 +238,14 @@ just                 # list all commands
 just up              # start everything (Docker infra + app servers)
 just stop            # stop everything
 just app-logs        # tail app server logs (backend + frontend)
+just backend-health  # check backend (DB, Redis, Temporal)
+just frontend-health # check frontend + backend status
+just check-ports     # check TCP port connectivity
 just restart         # reboot everything
 just reset           # destroy containers + volumes, then fresh start
 just purge           # total purge: containers + volumes + images
 just build           # production build in Docker
 just build-purge     # clean build volumes only
-just push            # build + push dev to origin
-just push feat/xxx   # build + push any branch
 just ports           # show service port map
 ```
 
