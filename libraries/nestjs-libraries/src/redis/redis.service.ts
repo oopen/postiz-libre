@@ -18,6 +18,10 @@ class MockRedis {
     return 1;
   }
 
+  async ping() {
+    return 'PONG';
+  }
+
   // Add other Redis methods as needed for your tests
 }
 

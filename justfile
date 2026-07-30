@@ -68,13 +68,17 @@ up:
 	set -euo pipefail
 	just compose --profile frontend stop postiz-frontend 2>/dev/null || true
 	just compose up -d --remove-orphans
-	echo "⏳ Waiting for backend to accept connections..."
+	echo "⏳ Waiting for backend..."
 	until docker compose port postiz-backend 3000 > /dev/null 2>&1; do sleep 2; done
 	BACKEND_PORT=$(docker compose port postiz-backend 3000 | cut -d: -f2)
-	until curl -s "http://localhost:$BACKEND_PORT" > /dev/null 2>&1; do sleep 2; done
+	until curl -sf "http://localhost:$BACKEND_PORT/health" > /dev/null 2>&1; do sleep 2; done
 	echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:$BACKEND_PORT" > apps/frontend/.env.local
 	echo "✅ Backend ready at localhost:$BACKEND_PORT"
 	just compose --profile frontend up -d --remove-orphans
+	FRONTEND_PORT=$(docker compose port postiz-frontend 4200 | cut -d: -f2)
+	echo "⏳ Waiting for frontend..."
+	until curl -sf "http://localhost:$FRONTEND_PORT/api/health" > /dev/null 2>&1; do sleep 2; done
+	echo "✅ Frontend ready at localhost:$FRONTEND_PORT"
 	just ports
 	just test-health
 
