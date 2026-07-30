@@ -32,6 +32,12 @@ set positional-arguments := true
 default:
 	@just --list
 	@echo ""
+	@echo "💡 Quick Start:"
+	@echo "  just up                       # Start Docker infra + app servers"
+	@echo "  just stop                     # Stop app servers + freeze containers"
+	@echo "  just restart                  # Reboot everything"
+	@echo "  just push                     # Build + push to origin"
+	@echo ""
 	@echo "💡 Environment Usage Examples:"
 	@echo "  just up                       # Start in dev mode (default)"
 	@echo "  ENV=prod just up              # Start in production mode"
@@ -40,10 +46,17 @@ default:
 	@echo "📋 Allowed ENV values: dev, prod, test"
 	@echo ""
 	@echo "🛑 Shutdown Lifecycle Guide (Know the difference!):"
-	@echo "  just stop                     # PAUSE: Freezes containers. Keeps ALL data/cache. (Fast)"
+	@echo "  just stop                     # PAUSE: Stop apps, freeze containers. Keeps ALL data/cache. (Fast)"
 	@echo "  just restart                  # REBOOT: Fast stop and safe start. Keeps ALL data/cache."
 	@echo "  just reset                    # RESET DATA: Destroys containers, networks & database VOLUMES."
 	@echo "  just purge                    # TOTAL PURGE: Destroys everything + purges local built image cache."
+	@echo ""
+	@echo "📦 App Server Commands:"
+	@echo "  just app-start                # Start Node.js servers (backend + frontend)"
+	@echo "  just app-stop                 # Stop Node.js servers"
+	@echo "  just app-clean                # Stop servers + remove build artifacts"
+	@echo "  just build                    # Clean + production build all apps"
+	@echo "  just push [branch]            # Build + push branch to origin (default: dev)"
 	@echo ""
 	@echo "⚙️ Current Context:"
 	@echo "  Active Environment : {{ RAW_ENV }} (normalized: {{ ENV }})"
@@ -54,11 +67,12 @@ default:
 compose *args:
 	@docker compose {{ args }}
 
-# Start all services detached using cache, show ports, and run healthchecks
+# Start all services detached using cache, show ports, run healthchecks, then start app servers
 up:
 	docker compose up -d --remove-orphans
 	@just ports
 	@just test-health
+	@just app-start
 
 # Force download, rebuild, and recreate the entire stack with clean anonymous volumes
 rebuild:
@@ -66,8 +80,9 @@ rebuild:
 	@just ports
 	@just test-health
 
-# Stop containers without removing them (freezes state, preserves memory/disk)
+# Stop app servers and containers without removing them (freezes state, preserves memory/disk)
 stop:
+	@just app-stop
 	@docker compose stop
 
 # Fast and safe reboot of the stack without data loss
@@ -133,7 +148,9 @@ open target="all":
 
 	if [ "{{ target }}" = "all" ]; then
 		echo "🚀 Ensuring the whole stack is up..."
-		just up
+		docker compose up -d --remove-orphans
+		@just ports
+		@just test-health
 	else
 		echo "🚀 Ensuring service '{{ target }}' is up..."
 		docker compose up -d --remove-orphans "{{ target }}"
@@ -212,37 +229,37 @@ query filter="all":
 	@just _query {{ filter }}
 
 # ==============================================================================
-# Dev Server & Ship
+# App Server & Push
 # ==============================================================================
 
-# Stop the Node.js dev servers (backend + frontend)
-dev-stop:
-	@bash scripts/dev-stop.sh
+# Stop the Node.js app servers (backend + frontend)
+app-stop:
+	@bash scripts/app-stop.sh
 
-# Clean: stop dev servers + remove all build artifacts
-dev-clean: dev-stop
+# Clean: stop app servers + remove all build artifacts
+app-clean: app-stop
 	#!/usr/bin/env bash
 	set -euo pipefail
 	echo "🧹 Cleaning build artifacts..."
 	rm -rf apps/backend/dist apps/frontend/dist apps/frontend/.next apps/orchestrator/dist
 
-# Start dev servers (backend + frontend)
-dev-start:
+# Start app servers (backend + frontend)
+app-start:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	source .env 2>/dev/null || true
 	export FRONTEND_PORT
 	export PORT
-	echo "🚀 Starting dev servers on ports ${PORT:-3000}/${FRONTEND_PORT:-4200}..."
+	echo "🚀 Starting app servers on ports ${PORT:-3000}/${FRONTEND_PORT:-4200}..."
 	pnpm run dev-backend
 
 # Production build (all apps)
-build: dev-clean
+build: app-clean
 	@echo "🔨 Building..."
 	pnpm run build
 
 # Build + push to origin
-ship branch="dev": build
+push branch="dev": build
 	@echo "🚀 Pushing to origin/{{ branch }}..."
 	git push origin {{ branch }}
 
