@@ -1,10 +1,6 @@
-# ==============================================================================
-# Project Customization (Modify this for each new project)
-# ==============================================================================
-
 # Define precise web services that require http:// or https:// routing.
 # Format: "service_name:internal_port" (space-separated)
-WEB_SERVICES := "temporal-ui:8080 postiz-pg-admin:80 postiz-redisinsight:5540 postiz-frontend:4200"
+WEB_SERVICES := "temporal-ui:8080 postiz-pg-admin:80 postiz-redisinsight:5540 postiz-frontend:4200 postiz-backend:3000"
 
 # ==============================================================================
 # Configuration & Environment Detection
