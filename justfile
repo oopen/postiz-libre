@@ -26,7 +26,7 @@ set positional-arguments := true
 
 # List available commands, environment status, and filtering usage
 default:
-	@just --list
+	just --list
 	@echo ""
 	@echo "💡 Quick Start:"
 	@echo "  just up                       # Start everything (Docker infra + app servers)"
@@ -81,16 +81,16 @@ up:
 # Force download, rebuild, and recreate the entire stack with clean anonymous volumes
 rebuild:
 	just compose up -d --remove-orphans --pull always --build --force-recreate --renew-anon-volumes
-	@just ports
-	@just test-health
+	just ports
+	just test-health
 
 # Stop containers without removing them (freezes state, preserves memory/disk)
 stop:
-	@just compose stop
+	just compose stop
 
 # Tail the app server logs
 app-logs:
-	@just compose logs -f postiz-backend postiz-frontend
+	just compose logs -f postiz-backend postiz-frontend
 
 # Fast and safe reboot of the stack without data loss
 restart: stop up
@@ -98,7 +98,7 @@ restart: stop up
 # Stop and remove all containers, networks, and database volumes, then fresh start
 reset:
 	just compose --profile frontend --profile build down --remove-orphans --volumes
-	@just up
+	just up
 
 # Deep clean this local Docker stack (removes containers, volumes, and local built images)
 purge:
@@ -158,8 +158,8 @@ open target="all":
 	if [ "{{ target }}" = "all" ]; then
 		echo "🚀 Ensuring the whole stack is up..."
 		just compose up -d --remove-orphans
-		@just ports
-		@just test-health
+		just ports
+		just test-health
 	else
 		echo "🚀 Ensuring service '{{ target }}' is up..."
 		just compose up -d --remove-orphans "{{ target }}"
@@ -235,7 +235,7 @@ test-health:
 
 # Query specific port bindings for automation scripts. Filters: all, web, tcp, udp
 query filter="all":
-	@just _query {{ filter }}
+	just _query {{ filter }}
 
 # ==============================================================================
 # Build & Push
