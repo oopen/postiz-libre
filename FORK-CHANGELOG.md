@@ -22,6 +22,13 @@ Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
   - Renamed `dev-*` → `app-*`, `ship` → `push` for clarity
   - Removed `scripts/app-stop.sh` (host process management no longer needed)
 
+- **feat(health):** health endpoints for readiness detection (Commits `ca6cf271` to `0742be4e`, 6 files, +97/−16)
+  - Backend `GET /`: checks database (Prisma SELECT 1), Redis (PING), Temporal (listSearchAttributes), returns `ok|degraded`
+  - Frontend `GET /api/health`: pings backend `/`, merges status
+  - `MockRedis.ping()` added for consistency
+  - `RootController` replaced by `HealthController`
+  - `justfile`: `test-health` → `check-ports`, new `backend-health`/`frontend-health` subcommands
+
 ## [v0.1.0-libre] — 2026-07-29
 
 ### Added
