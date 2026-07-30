@@ -59,13 +59,9 @@ services:
       dockerfile: Dockerfile.dev
       target: dev
     container_name: postiz-backend
-    working_dir: /app
-    entrypoint: ["sh", "-c"]
     command:
       - |
-        npm --no-update-notifier --no-fund --global install pnpm@10.6.1
         chown -R node:node /app/.pnpm-store /app/node_modules /app/apps/backend/node_modules 2>/dev/null || true
-        rm -rf /app/apps/backend/dist 2>/dev/null || true
         su node --command 'pnpm install --frozen-lockfile'
         su node --command 'pnpm run dev:backend'
     volumes:
@@ -101,13 +97,9 @@ services:
       dockerfile: Dockerfile.dev
       target: dev
     container_name: postiz-frontend
-    working_dir: /app
-    entrypoint: ["sh", "-c"]
     command:
       - |
-        npm --no-update-notifier --no-fund --global install pnpm@10.6.1
-        chown -R node:node /app/.pnpm-store /app/node_modules /app/apps/frontend/node_modules 2>/dev/null || true
-        rm -rf /app/apps/frontend/.next 2>/dev/null || true
+        chown -R node:node /app/.pnpm-store /app/node_modules /app/apps/frontend/node_modules /app/apps/frontend/.next 2>/dev/null || true
         su node --command 'pnpm install --frozen-lockfile'
         su node --command 'export $$(grep NEXT_PUBLIC_BACKEND_URL /app/apps/frontend/.env.local 2>/dev/null | xargs) && pnpm run dev:frontend'
     volumes:
@@ -115,6 +107,7 @@ services:
       - fe-pnpm-store:/app/.pnpm-store
       - fe-node_modules:/app/node_modules
       - fe-app-node_modules:/app/apps/frontend/node_modules
+      - fe-next:/app/apps/frontend/.next
     ports:
       - "127.0.0.1:0:4200"
     environment:
@@ -133,15 +126,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-      target: dev
+      target: build
     container_name: postiz-build
-    working_dir: /app
-    entrypoint: ["sh", "-c"]
     command:
       - |
-        npm --no-update-notifier --no-fund --global install pnpm@10.6.1
-        chown -R node:node /app/.pnpm-store /app/node_modules /app/apps/backend/node_modules /app/apps/frontend/node_modules /app/apps/orchestrator/node_modules 2>/dev/null || true
-        rm -rf /app/apps/frontend/.next /app/apps/backend/dist /app/apps/orchestrator/dist 2>/dev/null || true
+        chown -R node:node /app/.pnpm-store /app/node_modules /app/apps/backend/node_modules /app/apps/frontend/node_modules /app/apps/orchestrator/node_modules /app/apps/frontend/.next 2>/dev/null || true
         su node --command 'pnpm install --frozen-lockfile'
         su node --command 'pnpm run build'
     volumes:
@@ -151,6 +140,7 @@ services:
       - build-backend-node_modules:/app/apps/backend/node_modules
       - build-frontend-node_modules:/app/apps/frontend/node_modules
       - build-orchestrator-node_modules:/app/apps/orchestrator/node_modules
+      - build-next:/app/apps/frontend/.next
 
   temporal-elasticsearch:
     container_name: temporal-elasticsearch
@@ -240,11 +230,13 @@ volumes:
   fe-pnpm-store:
   fe-node_modules:
   fe-app-node_modules:
+  fe-next:
   build-pnpm-store:
   build-node_modules:
   build-backend-node_modules:
   build-frontend-node_modules:
   build-orchestrator-node_modules:
+  build-next:
   redisinsight:
   postgres-volume:
     external: false
