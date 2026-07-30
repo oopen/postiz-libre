@@ -1,4 +1,4 @@
-# FORK-ROADMAP — postiz-app-libre
+# FORK-ROADMAP — postiz-libre
 
 > Living roadmap. Updated from `dev`. Priority: 🔴 high → 🟡 medium → 🟢 low.
 

@@ -1,6 +1,6 @@
-# AI Agent System Prompt — postiz-app-libre
+# AI Agent System Prompt — postiz-libre
 
-> Safety prompt for LLM assistants working on the postiz-app-libre fork.
+> Safety prompt for LLM assistants working on the postiz-libre fork.
 
 ---
 
@@ -43,7 +43,7 @@ Never assume a branch exists or has a specific state from a previous session.
 
 ## Project Overview
 
-**Repository:** https://github.com/oopen/postiz-app-libre  
+**Repository:** https://github.com/oopen/postiz-libre  
 **Upstream:** https://github.com/gitroomhq/postiz-app  
 **Purpose:** A liberation fork breaking the OpenAI vendor lock-in imposed by upstream. Features are merged into `dev` and can be proposed as independent PRs to upstream.
 
@@ -76,7 +76,7 @@ upstream/main (gitroomhq/postiz-app)
         │
         │  ← regular sync (fetch + merge --ff-only)
         ▼
-    main (oopen/postiz-app-libre)  ← clean upstream mirror, NEVER commit here
+    main (oopen/postiz-libre)  ← clean upstream mirror, NEVER commit here
         │
         ├── feat/xxx (feature branches, created from main)
         ├── feat/yyy

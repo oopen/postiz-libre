@@ -1,6 +1,6 @@
-# Changelog — postiz-app-libre
+# Changelog — postiz-libre
 
-All notable changes to postiz-app-libre will be documented in this file.
+All notable changes to postiz-libre will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
@@ -58,5 +58,5 @@ Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
 - `FORK-GIT-WORKFLOW.md`: branch management and sync workflow guide
 - `FORK-CHANGELOG.md`: this file
 
-[Unreleased]: https://github.com/oopen/postiz-app-libre/compare/v0.1.0-libre...dev
-[v0.1.0-libre]: https://github.com/oopen/postiz-app-libre/releases/tag/v0.1.0-libre
+[Unreleased]: https://github.com/oopen/postiz-libre/compare/v0.1.0-libre...dev
+[v0.1.0-libre]: https://github.com/oopen/postiz-libre/releases/tag/v0.1.0-libre
