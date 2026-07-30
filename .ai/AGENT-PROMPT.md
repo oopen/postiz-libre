@@ -209,15 +209,16 @@ pnpm run dev-backend   # backend + frontend
 
 ```bash
 just                 # list all commands
-just up              # docker compose up + ports + healthcheck
-just dev-start       # start backend + frontend dev servers
-just dev-stop        # stop all dev servers (cross-terminal)
-just dev-clean       # stop servers + remove dist/ .next/
+just up              # Docker up + ports + healthcheck + app-start
+just stop            # app-stop + freeze containers
+just app-start       # start backend + frontend app servers
+just app-stop        # stop all app servers (cross-terminal)
+just app-clean       # stop servers + remove dist/ .next/
 just build           # clean + production build all 3 apps
-just ship            # build + push dev to origin
-just ship feat/xxx   # build + push any branch
+just push            # build + push dev to origin
+just push feat/xxx   # build + push any branch
 just ports           # show service port map
-just restart         # docker stop + up
+just restart         # reboot everything
 just reset           # destroy containers + volumes
 ```
 

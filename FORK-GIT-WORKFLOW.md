@@ -34,15 +34,17 @@ All dev lifecycle and pushes go through `just`. Never `git push origin dev` dire
 
 | Command | Does |
 |---------|------|
-| `just up` | Start Docker infrastructure |
-| `just dev-start` | Start backend + frontend dev servers |
-| `just dev-stop` | Stop all dev servers (cross-terminal) |
-| `just dev-clean` | Stop servers + remove build artifacts |
+| `just up` | Start Docker infrastructure + app servers |
+| `just stop` | Stop app servers + freeze Docker containers |
+| `just app-start` | Start backend + frontend app servers |
+| `just app-stop` | Stop all app servers (cross-terminal) |
+| `just app-clean` | Stop servers + remove build artifacts |
 | `just build` | Clean + production build all 3 apps |
-| `just ship` | Build + push `dev` to origin |
-| `just ship feat/xxx` | Build + push any branch |
+| `just push` | Build + push `dev` to origin |
+| `just push feat/xxx` | Build + push any branch |
 | `just ports` | Show Docker port map |
-| `just restart` | Docker stop + up |
+| `just restart` | Reboot everything |
+| `just reset` | Destroy containers + volumes |
 
 ---
 
@@ -82,8 +84,8 @@ git rebase main
 git add <resolved-files>
 git rebase --continue
 
-# Push (use just ship — it builds before pushing)
-just ship
+# Push (use just push — it builds before pushing)
+just push
 ```
 
 ---
@@ -98,7 +100,7 @@ git checkout feat/unlock-ai-vendor-lockin
 git rebase main
 
 # Push
-just ship feat/unlock-ai-vendor-lockin
+just push feat/unlock-ai-vendor-lockin
 
 # Open PR via GitHub:
 #    base : gitroomhq/postiz-app:main
@@ -114,7 +116,7 @@ just ship feat/unlock-ai-vendor-lockin
 ```bash
 git checkout dev
 git merge feat/unlock-ai-vendor-lockin --no-ff
-just ship
+just push
 ```
 
 ---
@@ -181,7 +183,7 @@ git push --force-with-lease origin main
 # Move the commit to dev
 git checkout dev
 git cherry-pick <commit-hash>
-just ship
+just push
 ```
 
 ### "Feature rebase creates conflicts"
