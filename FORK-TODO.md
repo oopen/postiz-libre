@@ -7,7 +7,6 @@
 | Tâche | Depuis |
 |-------|--------|
 | feat/compose-improvements — final review | 2026-07-30 |
-| Docs AGENT-PROMPT.md rules hardened | 2026-07-30 |
 
 ## Backlog
 
