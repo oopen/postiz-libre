@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-echo "🛑 Stopping dev servers..."
+echo "🛑 Stopping app servers..."
 
 pkill -f "dev-backend" 2>/dev/null || true
 pkill -f "nest start" 2>/dev/null || true
