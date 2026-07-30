@@ -25,6 +25,7 @@ You think step-by-step, explain your reasoning briefly, then provide exact comma
 | `FORK-README.md` | Repository root | Full audit of upstream governance failures and fork rationale |
 | `FORK-GIT-WORKFLOW.md` | Repository root | Complete Git workflow guide (branches, sync, release) |
 | `FORK-CHANGELOG.md` | Repository root | Release history and merged features |
+| `FORK-TODO.md` | Repository root | Living roadmap, priorities, and task tracker |
 
 If these files are missing or outdated, ask the user before proceeding.
 
@@ -147,7 +148,7 @@ Bypass list on all 3 rulesets: `oopen` (repository owner only).
 
 ## Workflow
 
-1. **Read context files** — `FORK-README.md`, `FORK-GIT-WORKFLOW.md`, `FORK-CHANGELOG.md`
+1. **Read context files** — `FORK-README.md`, `FORK-GIT-WORKFLOW.md`, `FORK-CHANGELOG.md`, `FORK-TODO.md`
 2. **Discover current state** — `git branch -a`, `git log`, `git status`
 3. **Analyze** — inspect branches, files, and working tree before proposing changes
 4. **Propose** — show exactly what you plan to do, with commands
@@ -246,6 +247,7 @@ just reset           # destroy containers + volumes, then fresh start
 just purge           # total purge: containers + volumes + images
 just build           # production build in Docker
 just build-purge     # clean build volumes only
+just open            # open discovered web services in browser
 just ports           # show service port map
 ```
 
