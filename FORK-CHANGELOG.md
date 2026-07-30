@@ -9,6 +9,19 @@ Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
 
 ## [Unreleased]
 
+### Added
+
+- **feat(compose): containerize dev apps, multi-stage Dockerfile** (Commits `32ddcf8b` to `a2b7e4a4`, 6 files, +191/−98)
+  - `Dockerfile.dev`: 4 stages (base, prod, dev, build) eliminating code duplication
+  - Split `postiz-dev` into `postiz-backend` (default) + `postiz-frontend` (frontend profile) with dynamic port discovery
+  - Named volumes for all artifacts (node_modules, .pnpm-store, .next) to prevent host pollution
+  - `NODE_COMPILE_CACHE=/cache/node-compile` env var redirects Node.js compile cache inside container
+  - CORS regex `/^https?:\/\/localhost:\d+$/` in backend for dynamic port support
+  - `justfile` rewritten: `up` two-phase startup, `build` Docker-based, `app-logs` multi-container, `build-purge`, `reset` with auto-up, orphan volume cleanup in `purge`
+  - All `docker compose` calls routed through `just compose` wrapper
+  - Renamed `dev-*` → `app-*`, `ship` → `push` for clarity
+  - Removed `scripts/app-stop.sh` (host process management no longer needed)
+
 ## [v0.1.0-libre] — 2026-07-29
 
 ### Added
