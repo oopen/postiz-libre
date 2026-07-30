@@ -4,7 +4,7 @@
 
 # Define precise web services that require http:// or https:// routing.
 # Format: "service_name:internal_port" (space-separated)
-WEB_SERVICES := "temporal-ui:8080 postiz-pg-admin:80 postiz-redisinsight:5540"
+WEB_SERVICES := "temporal-ui:8080 postiz-pg-admin:80 postiz-redisinsight:5540 postiz-frontend:4200"
 
 # ==============================================================================
 # Configuration & Environment Detection
@@ -33,8 +33,9 @@ default:
 	@just --list
 	@echo ""
 	@echo "💡 Quick Start:"
-	@echo "  just up                       # Start Docker infra + app servers"
-	@echo "  just stop                     # Stop app servers + freeze containers"
+	@echo "  just up                       # Start everything (Docker infra + app servers)"
+	@echo "  just stop                     # Stop everything"
+	@echo "  just app-logs                 # Tail app server logs"
 	@echo "  just restart                  # Reboot everything"
 	@echo "  just push                     # Build + push to origin"
 	@echo ""
@@ -45,17 +46,15 @@ default:
 	@echo ""
 	@echo "📋 Allowed ENV values: dev, prod, test"
 	@echo ""
-	@echo "🛑 Shutdown Lifecycle Guide (Know the difference!):"
-	@echo "  just stop                     # PAUSE: Stop apps, freeze containers. Keeps ALL data/cache. (Fast)"
+	@echo "🛑 Lifecycle Guide (Know the difference!):"
+	@echo "  just stop                     # PAUSE: Freeze containers. Keeps ALL data/cache. (Fast)"
 	@echo "  just restart                  # REBOOT: Fast stop and safe start. Keeps ALL data/cache."
-	@echo "  just reset                    # RESET DATA: Destroys containers, networks & database VOLUMES."
+	@echo "  just reset                    # RESET: Destroy containers + volumes, then fresh start."
 	@echo "  just purge                    # TOTAL PURGE: Destroys everything + purges local built image cache."
 	@echo ""
-	@echo "📦 App Server Commands:"
-	@echo "  just app-start                # Start Node.js servers (backend + frontend)"
-	@echo "  just app-stop                 # Stop Node.js servers"
-	@echo "  just app-clean                # Stop servers + remove build artifacts"
-	@echo "  just build                    # Clean + production build all apps"
+	@echo "📦 Build & Deploy:"
+	@echo "  just build                    # Production build in Docker"
+	@echo "  just build-purge              # Clean build volumes"
 	@echo "  just push [branch]            # Build + push branch to origin (default: dev)"
 	@echo ""
 	@echo "⚙️ Current Context:"
@@ -67,30 +66,43 @@ default:
 compose *args:
 	@docker compose {{ args }}
 
-# Start all services detached using cache, show ports, run healthchecks, then start app servers
+# Start all services (infra + backend), discover backend port, then start frontend
 up:
-	docker compose up -d --remove-orphans
-	@just ports
-	@just test-health
-	@just app-start
+	#!/usr/bin/env bash
+	set -euo pipefail
+	just compose --profile frontend stop postiz-frontend 2>/dev/null || true
+	just compose up -d --remove-orphans
+	echo "⏳ Waiting for backend to accept connections..."
+	until docker compose port postiz-backend 3000 > /dev/null 2>&1; do sleep 2; done
+	BACKEND_PORT=$(docker compose port postiz-backend 3000 | cut -d: -f2)
+	until curl -s "http://localhost:$BACKEND_PORT" > /dev/null 2>&1; do sleep 2; done
+	echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:$BACKEND_PORT" > apps/frontend/.env.local
+	echo "✅ Backend ready at localhost:$BACKEND_PORT"
+	just compose --profile frontend up -d --remove-orphans
+	just ports
+	just test-health
 
 # Force download, rebuild, and recreate the entire stack with clean anonymous volumes
 rebuild:
-	docker compose up -d --remove-orphans --pull always --build --force-recreate --renew-anon-volumes
+	just compose up -d --remove-orphans --pull always --build --force-recreate --renew-anon-volumes
 	@just ports
 	@just test-health
 
-# Stop app servers and containers without removing them (freezes state, preserves memory/disk)
+# Stop containers without removing them (freezes state, preserves memory/disk)
 stop:
-	@just app-stop
-	@docker compose stop
+	@just compose stop
+
+# Tail the app server logs
+app-logs:
+	@just compose logs -f postiz-backend postiz-frontend
 
 # Fast and safe reboot of the stack without data loss
 restart: stop up
 
-# Stop and remove all containers, networks, and database volumes (wipes databases)
+# Stop and remove all containers, networks, and database volumes, then fresh start
 reset:
-	docker compose down --remove-orphans --volumes
+	just compose --profile frontend --profile build down --remove-orphans --volumes
+	@just up
 
 # Deep clean this local Docker stack (removes containers, volumes, and local built images)
 purge:
@@ -109,8 +121,9 @@ purge:
 	fi
 	
 	echo "🧹 Destroying stack containers, volumes, and locally built images..."
-	docker compose down --remove-orphans --volumes --rmi local
-	
+	just compose --profile frontend --profile build down --remove-orphans --volumes --rmi local
+	PROJECT=$(just compose config 2>/dev/null | sed -n 's/^name: *//p'); docker volume ls -q --filter name="${PROJECT}_" 2>/dev/null | while read -r vol; do docker volume rm -f "$vol" > /dev/null 2>&1 || true; done
+
 	echo -e "✨ ${BOLD}Stack successfully purged!${RESET}"
 
 # Parse 'docker compose ps' output to extract real host ports with colorized UI
@@ -148,12 +161,12 @@ open target="all":
 
 	if [ "{{ target }}" = "all" ]; then
 		echo "🚀 Ensuring the whole stack is up..."
-		docker compose up -d --remove-orphans
+		just compose up -d --remove-orphans
 		@just ports
 		@just test-health
 	else
 		echo "🚀 Ensuring service '{{ target }}' is up..."
-		docker compose up -d --remove-orphans "{{ target }}"
+		just compose up -d --remove-orphans "{{ target }}"
 		sleep 1
 	fi
 
@@ -229,34 +242,16 @@ query filter="all":
 	@just _query {{ filter }}
 
 # ==============================================================================
-# App Server & Push
+# Build & Push
 # ==============================================================================
 
-# Stop the Node.js app servers (backend + frontend)
-app-stop:
-	@bash scripts/app-stop.sh
+# Production build (all apps) — runs inside Docker
+build:
+	just compose --profile build run --rm postiz-build
 
-# Clean: stop app servers + remove all build artifacts
-app-clean: app-stop
-	#!/usr/bin/env bash
-	set -euo pipefail
-	echo "🧹 Cleaning build artifacts..."
-	rm -rf apps/backend/dist apps/frontend/dist apps/frontend/.next apps/orchestrator/dist
-
-# Start app servers (backend + frontend)
-app-start:
-	#!/usr/bin/env bash
-	set -euo pipefail
-	source .env 2>/dev/null || true
-	export FRONTEND_PORT
-	export PORT
-	echo "🚀 Starting app servers on ports ${PORT:-3000}/${FRONTEND_PORT:-4200}..."
-	pnpm run dev-backend
-
-# Production build (all apps)
-build: app-clean
-	@echo "🔨 Building..."
-	pnpm run build
+# Clean build volumes and artifacts (leaves dev infra intact)
+build-purge:
+	just compose --profile build down --remove-orphans --volumes --rmi local
 
 # Build + push to origin
 push branch="dev": build
@@ -271,7 +266,7 @@ _query filter:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	
-	docker compose ps --format json | awk -v mode="{{ filter }}" -v web_services_str="{{ WEB_SERVICES }}" '
+	just compose ps --format json | awk -v mode="{{ filter }}" -v web_services_str="{{ WEB_SERVICES }}" '
 	BEGIN {
 		# Parse custom web services list
 		split(web_services_str, ws_arr, " ")

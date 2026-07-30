@@ -53,6 +53,105 @@ services:
     networks:
       - postiz-network
 
+  postiz-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: dev
+    container_name: postiz-backend
+    working_dir: /app
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        npm --no-update-notifier --no-fund --global install pnpm@10.6.1
+        chown -R node:node /app/.pnpm-store /app/node_modules /app/apps/backend/node_modules 2>/dev/null || true
+        rm -rf /app/apps/backend/dist 2>/dev/null || true
+        su node --command 'pnpm install --frozen-lockfile'
+        su node --command 'pnpm run dev:backend'
+    volumes:
+      - .:/app
+      - be-pnpm-store:/app/.pnpm-store
+      - be-node_modules:/app/node_modules
+      - be-app-node_modules:/app/apps/backend/node_modules
+    ports:
+      - "127.0.0.1:0:3000"
+    environment:
+      PORT: "3000"
+      DATABASE_URL: "postgresql://postiz-local:postiz-local-pwd@postiz-postgres:5432/postiz-db-local"
+      REDIS_URL: "redis://postiz-redis:6379"
+      TEMPORAL_ADDRESS: "temporal:7233"
+      JWT_SECRET: "local-dev-jwt-secret-not-for-production-123456789"
+      FRONTEND_URL: "http://localhost:4200"
+      STORAGE_PROVIDER: "local"
+      IS_GENERAL: "true"
+    depends_on:
+      postiz-postgres:
+        condition: service_started
+      postiz-redis:
+        condition: service_started
+    networks:
+      - postiz-network
+      - temporal-network
+
+  postiz-frontend:
+    profiles:
+      - frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: dev
+    container_name: postiz-frontend
+    working_dir: /app
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        npm --no-update-notifier --no-fund --global install pnpm@10.6.1
+        chown -R node:node /app/.pnpm-store /app/node_modules /app/apps/frontend/node_modules 2>/dev/null || true
+        rm -rf /app/apps/frontend/.next 2>/dev/null || true
+        su node --command 'pnpm install --frozen-lockfile'
+        su node --command 'export $$(grep NEXT_PUBLIC_BACKEND_URL /app/apps/frontend/.env.local 2>/dev/null | xargs) && pnpm run dev:frontend'
+    volumes:
+      - .:/app
+      - fe-pnpm-store:/app/.pnpm-store
+      - fe-node_modules:/app/node_modules
+      - fe-app-node_modules:/app/apps/frontend/node_modules
+    ports:
+      - "127.0.0.1:0:4200"
+    environment:
+      FRONTEND_PORT: "4200"
+      BACKEND_INTERNAL_URL: "http://postiz-backend:3000"
+      STORAGE_PROVIDER: "local"
+    depends_on:
+      postiz-backend:
+        condition: service_started
+    networks:
+      - postiz-network
+
+  postiz-build:
+    profiles:
+      - build
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: dev
+    container_name: postiz-build
+    working_dir: /app
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        npm --no-update-notifier --no-fund --global install pnpm@10.6.1
+        chown -R node:node /app/.pnpm-store /app/node_modules /app/apps/backend/node_modules /app/apps/frontend/node_modules /app/apps/orchestrator/node_modules 2>/dev/null || true
+        rm -rf /app/apps/frontend/.next /app/apps/backend/dist /app/apps/orchestrator/dist 2>/dev/null || true
+        su node --command 'pnpm install --frozen-lockfile'
+        su node --command 'pnpm run build'
+    volumes:
+      - .:/app
+      - build-pnpm-store:/app/.pnpm-store
+      - build-node_modules:/app/node_modules
+      - build-backend-node_modules:/app/apps/backend/node_modules
+      - build-frontend-node_modules:/app/apps/frontend/node_modules
+      - build-orchestrator-node_modules:/app/apps/orchestrator/node_modules
+
   temporal-elasticsearch:
     container_name: temporal-elasticsearch
     image: elasticsearch:7.17.27
@@ -135,6 +234,17 @@ services:
       - "127.0.0.1:0:8080"
 
 volumes:
+  be-pnpm-store:
+  be-node_modules:
+  be-app-node_modules:
+  fe-pnpm-store:
+  fe-node_modules:
+  fe-app-node_modules:
+  build-pnpm-store:
+  build-node_modules:
+  build-backend-node_modules:
+  build-frontend-node_modules:
+  build-orchestrator-node_modules:
   redisinsight:
   postgres-volume:
     external: false
