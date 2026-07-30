@@ -31,14 +31,19 @@ default:
 	@echo "💡 Quick Start:"
 	@echo "  just up                       # Start everything (Docker infra + app servers)"
 	@echo "  just stop                     # Stop everything"
-	@echo "  just app-logs                 # Tail app server logs"
 	@echo "  just restart                  # Reboot everything"
 	@echo "  just push                     # Build + push to origin"
+	@echo ""
+	@echo "💡 Monitoring:"
+	@echo "  just backend-health           # Check backend (DB, Redis, Temporal)"
+	@echo "  just frontend-health          # Check frontend + backend status"
+	@echo "  just app-logs                 # Tail app server logs"
+	@echo "  just check-ports              # Check TCP port connectivity"
 	@echo ""
 	@echo "💡 Environment Usage Examples:"
 	@echo "  just up                       # Start in dev mode (default)"
 	@echo "  ENV=prod just up              # Start in production mode"
-	@echo "  ENV=test just test-health     # Test health in testing mode"
+	@echo "  ENV=test just check-ports     # Test health in testing mode"
 	@echo ""
 	@echo "📋 Allowed ENV values: dev, prod, test"
 	@echo ""
@@ -62,27 +67,36 @@ default:
 compose *args:
 	@docker compose {{ args }}
 
-# Start all services (infra + backend), discover backend port, then start frontend
+# Start all services: infra + backend, discover port, then frontend
 up:
 	#!/usr/bin/env bash
 	set -euo pipefail
+	# Stop stale frontend from previous runs
 	just compose --profile frontend stop postiz-frontend 2>/dev/null || true
+	# Phase 1: start infrastructure and backend
 	just compose up -d --remove-orphans
-	echo "⏳ Waiting for backend to accept connections..."
-	until docker compose port postiz-backend 3000 > /dev/null 2>&1; do sleep 2; done
-	BACKEND_PORT=$(docker compose port postiz-backend 3000 | cut -d: -f2)
-	until curl -s "http://localhost:$BACKEND_PORT" > /dev/null 2>&1; do sleep 2; done
+	# Phase 2: wait for backend health (DB, Redis, Temporal)
+	echo "⏳ Waiting for backend..."
+	until just backend-health > /dev/null 2>&1; do sleep 2; done
+	BACKEND_PORT=$(just compose port postiz-backend 3000 | cut -d: -f2)
 	echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:$BACKEND_PORT" > apps/frontend/.env.local
 	echo "✅ Backend ready at localhost:$BACKEND_PORT"
+	# Phase 3: start frontend
 	just compose --profile frontend up -d --remove-orphans
+	# Phase 4: wait for frontend health
+	echo "⏳ Waiting for frontend..."
+	until just frontend-health > /dev/null 2>&1; do sleep 2; done
+	FRONTEND_PORT=$(just compose port postiz-frontend 4200 | cut -d: -f2)
+	echo "✅ Frontend ready at localhost:$FRONTEND_PORT"
+	# Status display
 	just ports
-	just test-health
+	just check-ports
 
 # Force download, rebuild, and recreate the entire stack with clean anonymous volumes
 rebuild:
 	just compose up -d --remove-orphans --pull always --build --force-recreate --renew-anon-volumes
 	just ports
-	just test-health
+	just check-ports
 
 # Stop containers without removing them (freezes state, preserves memory/disk)
 stop:
@@ -91,6 +105,22 @@ stop:
 # Tail the app server logs
 app-logs:
 	just compose logs -f postiz-backend postiz-frontend
+
+# Check backend application health (DB, Redis, Temporal)
+backend-health:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	BACKEND_PORT=$(just compose port postiz-backend 3000 2>/dev/null | cut -d: -f2)
+	if [ -z "${BACKEND_PORT:-}" ]; then echo "❌ Backend is not running"; exit 1; fi
+	curl -s "http://localhost:$BACKEND_PORT/" || { echo "❌ Backend not responding"; exit 1; }
+
+# Check frontend application health (includes backend status)
+frontend-health:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	FRONTEND_PORT=$(just compose port postiz-frontend 4200 2>/dev/null | cut -d: -f2)
+	if [ -z "${FRONTEND_PORT:-}" ]; then echo "❌ Frontend is not running"; exit 1; fi
+	curl -s "http://localhost:$FRONTEND_PORT/api/health" || { echo "❌ Frontend not responding"; exit 1; }
 
 # Fast and safe reboot of the stack without data loss
 restart: stop up
@@ -159,7 +189,7 @@ open target="all":
 		echo "🚀 Ensuring the whole stack is up..."
 		just compose up -d --remove-orphans
 		just ports
-		just test-health
+		just check-ports
 	else
 		echo "🚀 Ensuring service '{{ target }}' is up..."
 		just compose up -d --remove-orphans "{{ target }}"
@@ -185,8 +215,8 @@ open target="all":
 		$OPEN_CMD "$url"
 	done
 
-# Run automated healthchecks on all published services to verify uptime and port connectivity
-test-health:
+# Check TCP port connectivity for all published services
+check-ports:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	
@@ -340,3 +370,4 @@ _query filter:
 		}
 	}
 	'
+
