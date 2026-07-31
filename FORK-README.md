@@ -295,7 +295,20 @@ Given the documented upstream obstruction, the community fork is the only viable
 
 ---
 
-## 8. CONCLUSION
+## 8. Contributing Philosophy
+
+This fork exists only because upstream consistently ignores or blocks community contributions.
+Our rule is simple: **upstream first, fork second**.
+
+1. **Submit your feature to upstream first.** Open a PR on `gitroomhq/postiz-app`. Give them a fair chance to review and merge.
+2. **If your PR is ignored, closed without reason, or left to rot** — bring it here. Open an issue on this fork referencing your upstream PR.
+3. **We will review and merge.** No shadow-banning, no bot-closing, no silent ignoring.
+
+This fork is not a competitor. It is a safety net for contributions that upstream refuses to catch.
+
+---
+
+## 9. CONCLUSION
 
 The gitroomhq/postiz-app repository practices **facade governance**:
 - AGPL-3.0 license on paper
