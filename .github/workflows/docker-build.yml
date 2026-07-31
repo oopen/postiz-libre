@@ -38,7 +38,7 @@ jobs:
       - name: Detect release tags
         id: release
         run: |
-          TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+-libre' | head -1)
+          TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+-libre' | sort -V | tail -1)
           if [ -n "$TAG" ]; then
             VERSION="${TAG#v}"
             MAJOR="${VERSION%%.*}"
