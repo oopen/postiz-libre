@@ -173,6 +173,8 @@ services:
         chown -R node:node /app/.pnpm-store /app/node_modules /app/apps/backend/node_modules /app/apps/frontend/node_modules /app/apps/orchestrator/node_modules /app/apps/frontend/.next 2>/dev/null || true
         su node --command 'pnpm install --frozen-lockfile'
         su node --command 'pnpm run build'
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=3584"
     volumes:
       - .:/app
       - build-pnpm-store:/app/.pnpm-store
@@ -184,9 +186,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4096M
+          memory: 5120M
         reservations:
-          memory: 2048M
+          memory: 2560M
 
   temporal-elasticsearch:
     container_name: temporal-elasticsearch
