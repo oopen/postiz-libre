@@ -29,3 +29,7 @@ OPENAI_MODEL=your-model-name
 ## Roadmap
 
 → [FORK-ROADMAP.md](FORK-ROADMAP.md)
+
+## Screenshot
+
+![Postiz Libre unlock LLM](postiz-libre-alive.avif)
