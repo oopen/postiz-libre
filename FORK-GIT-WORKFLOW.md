@@ -141,28 +141,50 @@ just push
 
 Releases are cut from `dev`, never from `main`.
 
-```bash
-git checkout dev
-git pull origin dev
+### Versioning
 
-# See changes since last release
-git log --oneline --no-merges $(git describe --tags --abbrev=0)..dev
-
-# Tag
-git tag -a v1.0.0-libre -m "Release v1.0.0-libre
-- feat: unlock AI vendor lockin
-- feat: compose improvements
-- sync: upstream main @ $(git rev-parse --short upstream/main)"
-
-# Build Docker from dev
-docker build -t ghcr.io/oopen/postiz-libre:v1.0.0 .
-docker tag ghcr.io/oopen/postiz-libre:v1.0.0 ghcr.io/oopen/postiz-libre:latest
-
-# Push
-git push origin dev --tags
-docker push ghcr.io/oopen/postiz-libre:v1.0.0
-docker push ghcr.io/oopen/postiz-libre:latest
 ```
+v{upstream major}.{upstream minor}.{upstream patch}-libre{-n}
+
+v2.22.1-libre        ← first release (based on upstream v2.22.1)
+v2.22.1-libre-1      ← second release (upstream unchanged)
+v2.23.0-libre        ← after sync to upstream v2.23.0
+```
+
+Docker tags are published automatically by CI (semver):
+`v2.22.1-libre` (exact), `v2.22-libre` (latest minor), `v2-libre` (latest major), `latest`.
+
+### Release checklist
+
+```bash
+# 1. Find the upstream version our dev branch is based on
+UPSTREAM_TAG=$(git tag --merged $(git merge-base dev upstream/main) --sort=-v:refname | grep -E '^v[0-9]' | head -1)
+
+# 2. Tag
+git tag -a ${UPSTREAM_TAG}-libre -m "Release ${UPSTREAM_TAG}-libre — description"
+
+# 3. Push (CI builds and pushes Docker image automatically)
+git push origin dev --tags
+```
+
+---
+
+## 🐳 Docker image
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/oopen/postiz-libre:latest
+
+# Pull a specific tag
+docker pull ghcr.io/oopen/postiz-libre:dev
+docker pull ghcr.io/oopen/postiz-libre:v0.1.0-libre
+
+# Build locally
+docker build -f Dockerfile.dev --target prod -t postiz-libre:local .
+```
+
+Images are built automatically on push to `dev` and on `v*-libre` tags.
+Available at [github.com/oopen/postiz-libre/pkgs/container/postiz-libre](https://github.com/oopen/postiz-libre/pkgs/container/postiz-libre).
 
 ---
 
