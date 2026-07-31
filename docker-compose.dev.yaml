@@ -18,6 +18,12 @@ services:
       - 127.0.0.1:0:5432
     networks:
       - postiz-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
 
   postiz-redis:
     # ref: https://hub.docker.com/_/redis
@@ -27,6 +33,12 @@ services:
       - 127.0.0.1:0:6379
     networks:
       - postiz-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 32M
 
   postiz-pg-admin:
     # ref: https://hub.docker.com/r/dpage/pgadmin4/tags
@@ -39,6 +51,12 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     networks:
       - postiz-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
 
   postiz-redisinsight:
     # ref: https://hub.docker.com/r/redis/redisinsight
@@ -52,6 +70,12 @@ services:
       - redisinsight:/data
     networks:
       - postiz-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
 
   postiz-backend:
     build:
@@ -80,6 +104,8 @@ services:
       FRONTEND_URL: "http://localhost:4200"
       STORAGE_PROVIDER: "local"
       IS_GENERAL: "true"
+      NODE_OPTIONS: "--max-old-space-size=3072"
+      CHOKIDAR_USEPOLLING: "false"
     depends_on:
       postiz-postgres:
         condition: service_started
@@ -88,6 +114,12 @@ services:
     networks:
       - postiz-network
       - temporal-network
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+        reservations:
+          memory: 2048M
 
   postiz-frontend:
     profiles:
@@ -114,11 +146,19 @@ services:
       FRONTEND_PORT: "4200"
       BACKEND_INTERNAL_URL: "http://postiz-backend:3000"
       STORAGE_PROVIDER: "local"
+      NODE_OPTIONS: "--max-old-space-size=1536"
+      WATCHPACK_POLLING: "false"
     depends_on:
       postiz-backend:
         condition: service_started
     networks:
       - postiz-network
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+        reservations:
+          memory: 1024M
 
   postiz-build:
     profiles:
@@ -141,6 +181,12 @@ services:
       - build-frontend-node_modules:/app/apps/frontend/node_modules
       - build-orchestrator-node_modules:/app/apps/orchestrator/node_modules
       - build-next:/app/apps/frontend/.next
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+        reservations:
+          memory: 2048M
 
   temporal-elasticsearch:
     container_name: temporal-elasticsearch
@@ -159,6 +205,12 @@ services:
       - 9200
     volumes:
       - /var/lib/elasticsearch/data
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 256M
 
   temporal-postgresql:
     container_name: temporal-postgresql
@@ -172,6 +224,12 @@ services:
       - 5432
     volumes:
       - /var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
 
   temporal:
     container_name: temporal
@@ -198,6 +256,12 @@ services:
       - ./dynamicconfig:/etc/temporal/config/dynamicconfig
     labels:
       kompose.volume.type: configMap
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
 
   temporal-admin-tools:
     container_name: temporal-admin-tools
@@ -211,6 +275,12 @@ services:
     depends_on:
       - temporal
     tty: true
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 32M
 
   temporal-ui:
     container_name: temporal-ui
@@ -222,6 +292,12 @@ services:
       - temporal-network
     ports:
       - "127.0.0.1:0:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
 
 volumes:
   be-pnpm-store:
