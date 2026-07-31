@@ -3,7 +3,7 @@ name: Build and Push Libre Image
 on:
   push:
     branches: [dev]
-    tags: ['v*-libre']
+    tags: ['v*-libre*']
   workflow_dispatch:
 
 env:
