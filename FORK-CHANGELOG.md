@@ -7,6 +7,36 @@ Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
 
 ---
 
+## [v2.22.1-libre-9] — 2026-07-31
+
+### Added
+
+- **feat(just):** `tag`, `tag-next`, `tag-create` recipes for release management
+  - Automatic upstream tag discovery and libre tag computation
+  - Guarded tag creation (branch, tree, health checks, confirmation prompt)
+  - `just push` now includes `--tags`
+
+### Changed
+
+- **perf:** Docker resource limits on all services (dev + prod)
+  - `docker-compose.dev.yaml`: 12 services with `deploy.resources` limits (128M–4096M)
+  - `docker-compose.yaml`: 9 services with `deploy.resources` limits (128M–1536M)
+- **perf:** Node.js heap caps via `NODE_OPTIONS`
+  - Dev: backend 3072M, frontend 1536M
+  - Prod: postiz container 384M (in `Dockerfile.dev`)
+- **perf:** watcher polling disabled in dev containers
+  - `CHOKIDAR_USEPOLLING=false` (backend)
+  - `WATCHPACK_POLLING=false` (frontend)
+  - Results: frontend −47% RAM (2.8→1.5 GiB), CPU idle → 0%
+- **chore:** `nest-cli.json` `entryFile` simplified to `"main"` for backend + orchestrator
+- **chore:** `just stats` recipe for Docker resource monitoring
+
+### Fixed
+
+- **fix:** backend OOM crashes in Docker (Node.js cgroup v2 heap auto-detection fell below tsc compilation needs)
+
+---
+
 ## [v2.22.1-libre] — 2026-07-31
 
 ### Added
