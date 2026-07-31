@@ -45,9 +45,13 @@ jobs:
             MAJOR="${VERSION%%.*}"
             REST="${VERSION#*.}"
             MINOR="${REST%%.*}"
-            echo "tags=$TAG,$MAJOR.$MINOR-libre,$MAJOR-libre,latest" >> $GITHUB_OUTPUT
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+            echo "major_minor=$MAJOR.$MINOR-libre" >> $GITHUB_OUTPUT
+            echo "major=$MAJOR-libre" >> $GITHUB_OUTPUT
           else
-            echo "tags=" >> $GITHUB_OUTPUT
+            echo "tag=" >> $GITHUB_OUTPUT
+            echo "major_minor=" >> $GITHUB_OUTPUT
+            echo "major=" >> $GITHUB_OUTPUT
           fi
 
       - name: Extract Docker metadata
@@ -56,7 +60,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ steps.release.outputs.tags }}
+            type=raw,value=${{ steps.release.outputs.tag }},enable=${{ steps.release.outputs.tag != '' }}
+            type=raw,value=${{ steps.release.outputs.major_minor }},enable=${{ steps.release.outputs.tag != '' }}
+            type=raw,value=${{ steps.release.outputs.major }},enable=${{ steps.release.outputs.tag != '' }}
+            type=raw,value=latest,enable=${{ steps.release.outputs.tag != '' }}
             type=ref,event=branch
             type=sha,prefix=dev-
           flavor: |
