@@ -2,7 +2,6 @@ name: Build and Push Libre Image
 
 on:
   push:
-    branches: [dev]
     tags: ['v*-libre*']
   workflow_dispatch:
 
@@ -46,8 +45,8 @@ jobs:
             REST="${VERSION#*.}"
             MINOR="${REST%%.*}"
             echo "tag=$TAG" >> $GITHUB_OUTPUT
-            echo "major_minor=$MAJOR.$MINOR-libre" >> $GITHUB_OUTPUT
-            echo "major=$MAJOR-libre" >> $GITHUB_OUTPUT
+            echo "major_minor=v$MAJOR.$MINOR-libre" >> $GITHUB_OUTPUT
+            echo "major=v$MAJOR-libre" >> $GITHUB_OUTPUT
           else
             echo "tag=" >> $GITHUB_OUTPUT
             echo "major_minor=" >> $GITHUB_OUTPUT
@@ -64,7 +63,7 @@ jobs:
             type=raw,value=${{ steps.release.outputs.major_minor }},enable=${{ steps.release.outputs.tag != '' }}
             type=raw,value=${{ steps.release.outputs.major }},enable=${{ steps.release.outputs.tag != '' }}
             type=raw,value=latest,enable=${{ steps.release.outputs.tag != '' }}
-            type=ref,event=branch
+            type=raw,value=dev
             type=sha,prefix=dev-
           flavor: |
             latest=false
