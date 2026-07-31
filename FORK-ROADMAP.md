@@ -12,8 +12,8 @@
 
 | Prio | Task | Ver | Blocked by | Who |
 |:---:|------|:---:|---|:---:|
-| 🔴 | PR `feat/compose-improvements` → upstream | — | Upstream sync | Human |
-| 🔴 | PR `feat/unlock-ai-vendor-lockin` → upstream | — | Upstream sync | Human |
+| 🔴 | PR `feat/compose-improvements` → upstream | — | Polish feat/compose | Human |
+| 🔴 | PR `feat/unlock-ai-vendor-lockin` → upstream | — | Polish feat/unlock | Human |
 | 🟡 | Multi-env: `docker-compose.test.yaml` + `ENV=test` | v2.23 | — | AI |
 | 🟡 | Multi-env: test-specific seeding/health checks | v2.23 | test.yaml | AI |
 | 🟢 | `.env.example` — document Docker vs host mode | v2.23 | — | AI |
@@ -35,3 +35,4 @@
 | Date | Upstream commit | Action |
 |------|-----------------|--------|
 | 2026-07-29 | `994b56c7` | Initial sync |
+| 2026-07-31 | `cf4c432c` | Synced main, rebased dev + feat/*, merged feat/compose + feat/unlock |

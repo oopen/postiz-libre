@@ -50,76 +50,68 @@ All dev lifecycle and pushes go through `just`. Never `git push origin dev` dire
 
 ---
 
-## 🔄 Daily Workflow
+## 🔄 Sync Workflow
 
-### A. Sync `main` with upstream
+Sync the fork when upstream publishes a new release. This keeps `main`
+locked to a stable upstream tag rather than the latest commit on `main`.
+
+### Step 1: Sync `main` to the latest upstream release
 
 ```bash
-# Add upstream remote (one-time)
-git remote add upstream https://github.com/gitroomhq/postiz-app.git
-
-# Fetch latest changes
 git fetch upstream
 
-# Switch to main
+# Lock main to the latest upstream release tag (not latest commit)
+UPSTREAM_TAG=$(git ls-remote --tags upstream | grep -E 'v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 | sed 's/.*refs\/tags\///')
 git checkout main
-
-# Fast-forward merge (clean, no conflicts)
-git merge upstream/main --ff-only
-
-# Push
-git push origin main
+git reset --hard upstream/$UPSTREAM_TAG
+git push origin main --force-with-lease
 ```
 
----
+### Step 2: Rebase all branches on `main`
 
-### B. Rebase `dev` on fresh `main`
+```bash
+# Rebase dev
+git checkout dev
+git rebase main
+# Handle conflicts → git add <file> → git rebase --continue
+
+# Rebase feature branches
+git checkout feat/unlock-ai-vendor-lockin && git rebase main
+git checkout feat/compose-improvements && git rebase main
+```
+
+### Step 3: Merge features back into `dev`
+
+**Important trap:** After rebase, `git cherry dev feat/xxx` may show "0 commits missing"
+because all content is semantically present in `dev`. You MUST still merge with `--no-ff`.
+The rebase changed commit SHA, so `dev` does not have them as tracked objects.
 
 ```bash
 git checkout dev
-git pull origin dev
-
-# Rebase on main (just synced)
-git rebase main
-
-# If conflict: resolve, then
-git add <resolved-files>
-git rebase --continue
-
-# Push (use just push — it builds before pushing)
-just push
-```
-
----
-
-### C. Rebase a feature on `main` for upstream PR
-
-```bash
-# Switch to feature
-git checkout feat/unlock-ai-vendor-lockin
-
-# Rebase on main (synced with upstream)
-git rebase main
-
-# Push
-just push feat/unlock-ai-vendor-lockin
-
-# Open PR via GitHub:
-#    base : gitroomhq/postiz-app:main
-#    compare : oopen/postiz-libre:feat/unlock-ai-vendor-lockin
-```
-
-> **Important**: The upstream PR contains ONLY the feature commits. No FORK-README.md, no fork docs.
-
----
-
-### D. Merge a completed feature into `dev`
-
-```bash
-git checkout dev
+git merge feat/compose-improvements --no-ff
 git merge feat/unlock-ai-vendor-lockin --no-ff
-just push
 ```
+
+### Step 4: Push
+
+`--force-with-lease` is required after rebase (commit SHA changed).
+The `protect-dev` ruleset blocks `--force` but allows `--force-with-lease`.
+
+```bash
+git push origin dev --force-with-lease
+git push origin feat/unlock-ai-vendor-lockin --force-with-lease
+git push origin feat/compose-improvements --force-with-lease
+```
+
+### Known conflicts
+
+| File | Pattern | Resolution |
+|------|---------|------------|
+| `translation.json` | Upstream adds new i18n keys, fork adds AI error keys at same position | Keep both blocks (coupon keys + AI keys) |
+| `Dockerfile.dev` | `--frozen-lockfile` (fork) vs `pnpm install` (upstream) | Keep `--frozen-lockfile` |
+| `health.controller.ts` | Add/add (identically created on both branches) | `git checkout --theirs <file>` |
+| `justfile` | Add/add | `git checkout --theirs <file>` |
+| `health/route.ts` | Add/add | `git checkout --theirs <file>` |
 
 ---
 
@@ -177,7 +169,7 @@ docker pull ghcr.io/oopen/postiz-libre:latest
 
 # Pull a specific tag
 docker pull ghcr.io/oopen/postiz-libre:dev
-docker pull ghcr.io/oopen/postiz-libre:v0.1.0-libre
+docker pull ghcr.io/oopen/postiz-libre:v2.22.1-libre
 
 # Build locally
 docker build -f Dockerfile.dev --target prod -t postiz-libre:local .
