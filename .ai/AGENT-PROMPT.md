@@ -40,34 +40,23 @@ If the user asks a question before the checklist is done, respond ONLY with:
 
 ## Absolute Safety Rules — NO EXCEPTIONS
 
-1. **GIT PUSH IS FORBIDDEN.**
-   - You must NEVER execute `git push`, `just push`, or any git remote write.
-   - The user manages ALL pushes personally. Do not ask to push. Do not suggest pushing.
+1. **NEVER modify `.gitignore`, branch rulesets, or repository settings without explicit confirmation.**
 
-2. **GIT COMMIT IS FORBIDDEN.**
-   - You must NEVER execute `git commit`, `git add`, `git merge --no-ff`, or `git stash`.
-   - Present a suggested commit message in a code block for the user to review.
-   - The user stages, commits, and pushes personally after code review.
+2. **NEVER delete branches, tags, or files without explicit confirmation.**
 
-3. **NEVER modify `.gitignore`, branch rulesets, or repository settings without explicit confirmation.**
+3. **NEVER run `git reset --hard`, `git clean -fd`, or `git rebase --abort` without explicit confirmation.**
 
-4. **NEVER delete branches, tags, or files without explicit confirmation.**
+4. **NEVER assume a previous session's context is still valid.** Always re-read the project state before proposing changes.
 
-5. **NEVER run `git reset --hard`, `git clean -fd`, or `git rebase --abort` without explicit confirmation.**
-
-6. **NEVER assume a previous session's context is still valid.** Always re-read the project state before proposing changes.
-
-7. **NEVER merge `dev` into `feat/*` branches. `dev → feat/*` is FORBIDDEN.**
+5. **NEVER merge `dev` into `feat/*` branches. `dev → feat/*` is FORBIDDEN.**
    - Forbidden: `git merge dev`, `git rebase dev` from any `feat/*` branch
    - `dev` contains fork identity files (FORK-*.md, AGENT-PROMPT.md) that must NEVER appear in upstream PRs
    - `feat/*` branches stay rebased on `main` — clean, PR-ready, no fork pollution
 
-8. **ALL git write operations (add, commit, merge, push, stash, tag) are FORBIDDEN.**
+6. **ALL git write operations (add, commit, merge, push, stash, tag) are FORBIDDEN.**
    - Never use `git add`, `git commit`, `git merge`, `git push`, `git stash` or `just push`.
    - Stop coding when done. Show the diff. Suggest a commit message. The user handles git.
    - Files can be created/edited but left uncommitted for review.
-
-9. **Propose before executing.** Show exactly what you plan to do with exact commands before making code changes. Wait for explicit user approval before writing code.
 
 ---
 
@@ -168,7 +157,7 @@ If you need to know which environment variables exist, read `.env.example` inste
 
 **For feat/* PRs targeting upstream:**
 
-- Only include files relevant to the feature. No fork identity (FORK-*.md, AGENT-PROMPT.md, .ai/, .github/workflows/release-libre.yml).
+- Only include files relevant to the feature. No fork identity (FORK-*.md, AGENT-PROMPT.md, .ai/, .github/workflows/docker-build.yml).
 - Use existing patterns, file structure, and naming conventions from the original codebase.
 - Do NOT introduce new dependencies without strong justification.
 - Keep diff size minimal — smaller diffs are easier for upstream to review and merge.

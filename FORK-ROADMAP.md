@@ -10,21 +10,21 @@
 
 ## Backlog
 
-| Prio | Task | Ver | Blocked by | Who |
-|:---:|------|:---:|---|:---:|
-| 🔴 | PR `feat/compose-improvements` → upstream | — | Polish feat/compose | Human |
-| 🔴 | PR `feat/unlock-ai-vendor-lockin` → upstream | — | Polish feat/unlock | Human |
-| 🟡 | Multi-env: `docker-compose.test.yaml` + `ENV=test` | v2.23 | — | AI |
-| 🟡 | Multi-env: test-specific seeding/health checks | v2.23 | test.yaml | AI |
-| 🟢 | `.env.example` — document Docker vs host mode | v2.23 | — | AI |
-| 🟢 | Fork-specific CODE_OF_CONDUCT.md + CONTRIBUTING.md | v2.23 | — | AI |
-| 🟢 | Replace nginx with Ferron (auto Let's Encrypt) | v2.24 | feat/compose-improvements merged upstream | AI |
+| Prio | Task | Ver |
+|:---:|------|:---:|
+| 🔴 | PR `feat/compose-improvements` → upstream | — |
+| 🔴 | PR `feat/unlock-ai-vendor-lockin` → upstream | — |
+| 🟡 | Multi-env: `docker-compose.test.yaml` + `ENV=test` | v2.23 |
+| 🟡 | Multi-env: test-specific seeding/health checks | v2.23 |
+| 🟢 | `.env.example` — document Docker vs host mode | v2.23 |
+| 🟢 | Fork-specific CODE_OF_CONDUCT.md + CONTRIBUTING.md | v2.23 |
+| 🟢 | Replace nginx with Ferron (auto Let's Encrypt) | v2.24 |
 
 ## Maintenance
 
-| Task | Frequency | Who |
-|------|-----------|-----|
-| Sync upstream (fetch → rebase main → rebase dev → rebase feat/*) | Per release | Human |
+| Task | Frequency |
+|------|-----------|
+| Sync upstream (fetch → rebase main → rebase dev → rebase feat/*) | Per release |
 
 ## Done
 

@@ -140,7 +140,7 @@ done
 | `FORK-CHANGELOG.md` | `dev` | ❌ No |
 | `FORK-ROADMAP.md` | `dev` | ❌ No |
 | `FORK-GIT-WORKFLOW.md` | `dev` | ❌ No |
-| `.github/workflows/release-libre.yml` | `dev` | ❌ No |
+| `.github/workflows/docker-build.yml` | `dev` | ❌ No |
 | `libraries/.../openai.service.ts` (patched) | `feat/unlock-ai-vendor-lockin` | ✅ Yes |
 | `docker-compose.dev.yaml` | `feat/compose-improvements` | ✅ Yes |
 

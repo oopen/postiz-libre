@@ -326,5 +326,5 @@ structural failure and restore genuine open-source governance.
 
 ---
 
-*Document generated July 29, 2026. Sources: GitHub API, web search,  
+*Document generated July 31, 2026. Sources: GitHub API, web search,  
 analysis of public issues/PRs from the gitroomhq/postiz-app repository.*
