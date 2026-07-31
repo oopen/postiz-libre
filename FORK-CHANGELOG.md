@@ -2,14 +2,10 @@
 
 All notable changes to postiz-libre will be documented in this file.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
 
 ---
-
-## [Unreleased]
-
-(empty — next features go here)
 
 ## [v2.22.1-libre] — 2026-07-31
 
@@ -54,5 +50,4 @@ Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
 - `FORK-GIT-WORKFLOW.md`: branch management and sync workflow guide
 - `FORK-CHANGELOG.md`: this file
 
-[Unreleased]: https://github.com/oopen/postiz-libre/compare/v2.22.1-libre...dev
 [v2.22.1-libre]: https://github.com/oopen/postiz-libre/releases/tag/v2.22.1-libre
