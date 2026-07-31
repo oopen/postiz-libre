@@ -1,5 +1,8 @@
 name: Build and Push Libre Image
 
+# --- Triggers ---
+# Docker builds only run on version tags or manual dispatch.
+# CI builds (build.yml) handle branch pushes separately.
 on:
   push:
     tags: ['v*-libre*']
@@ -19,15 +22,19 @@ jobs:
       id-token: write
 
     steps:
+      # --- Clone ---
+      # fetch-depth: 0 is required for git tag --points-at HEAD to work
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: dev
           fetch-depth: 0
 
+      # --- Docker setup ---
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # --- GHCR login ---
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
@@ -35,39 +42,64 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # --- Detect release tags ---
+      # Extracts the vX.Y.Z-libre{-N} tag pointing at the current commit
+      # and computes floating tags: patch, minor, major.
+      #
+      # Example:  v2.22.1-libre-5
+      #   tag       = v2.22.1-libre-5   (exact)
+      #   patch     = v2.22.1-libre     (floating: latest v2.22.1.x)
+      #   minor     = v2.22-libre       (floating: latest v2.22.x)
+      #   major     = v2-libre          (floating: latest v2.x)
       - name: Detect release tags
         id: release
         run: |
           TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+-libre' | sort -V | tail -1)
           if [ -n "$TAG" ]; then
-            VERSION="${TAG#v}"
-            MAJOR="${VERSION%%.*}"
-            REST="${VERSION#*.}"
-            MINOR="${REST%%.*}"
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
-            echo "major_minor=v$MAJOR.$MINOR-libre" >> $GITHUB_OUTPUT
-            echo "major=v$MAJOR-libre" >> $GITHUB_OUTPUT
+            VERSION="${TAG#v}"                         # 2.22.1-libre-5
+            MAJOR="${VERSION%%.*}"                     # 2
+            REST="${VERSION#*.}"                       # 22.1-libre-5
+            MINOR="${REST%%.*}"                        # 22
+
+            # Strip the -N counter suffix to build the floating patch tag
+            # 2.22.1-libre-5 -> 2.22.1-libre
+            BASE_TAG="${VERSION%%-libre*}-libre"
+
+            echo "tag=${TAG}" >> $GITHUB_OUTPUT
+            echo "patch=v${BASE_TAG}" >> $GITHUB_OUTPUT
+            echo "minor=v${MAJOR}.${MINOR}-libre" >> $GITHUB_OUTPUT
+            echo "major=v${MAJOR}-libre" >> $GITHUB_OUTPUT
           else
             echo "tag=" >> $GITHUB_OUTPUT
-            echo "major_minor=" >> $GITHUB_OUTPUT
+            echo "patch=" >> $GITHUB_OUTPUT
+            echo "minor=" >> $GITHUB_OUTPUT
             echo "major=" >> $GITHUB_OUTPUT
           fi
 
+      # --- Docker metadata (tags + labels) ---
+      # Each tag is a separate type=raw line because docker/metadata-action
+      # does NOT support comma-separated values.
+      # enable= ensures tags are only generated when a release tag is present.
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            # Release-specific tags (only when a tag points at HEAD)
             type=raw,value=${{ steps.release.outputs.tag }},enable=${{ steps.release.outputs.tag != '' }}
-            type=raw,value=${{ steps.release.outputs.major_minor }},enable=${{ steps.release.outputs.tag != '' }}
+            type=raw,value=${{ steps.release.outputs.patch }},enable=${{ steps.release.outputs.tag != '' }}
+            type=raw,value=${{ steps.release.outputs.minor }},enable=${{ steps.release.outputs.tag != '' }}
             type=raw,value=${{ steps.release.outputs.major }},enable=${{ steps.release.outputs.tag != '' }}
             type=raw,value=latest,enable=${{ steps.release.outputs.tag != '' }}
+
+            # Always-on tags
             type=raw,value=dev
             type=sha,prefix=dev-
           flavor: |
             latest=false
 
+      # --- Build & push ---
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
@@ -81,6 +113,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # --- Provenance attestation ---
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
