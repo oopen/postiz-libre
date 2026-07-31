@@ -4,20 +4,32 @@
 
 ---
 
-## 🗺️ Branch Architecture (Current Situation)
+## 🗺️ Branch Architecture
 
-```
-upstream/main (gitroomhq/postiz-app)
-        │
-        │  ← regular sync
-        ▼
-    main (oopen/postiz-libre)  ← CLEAN, upstream mirror
-        │
-        ├── feat/unlock-ai-vendor-lockin
-        └── feat/compose-improvements
-        │
-        ▼
-       dev  ← ← ← FORK INTEGRATION BRANCH (created)
+```mermaid
+flowchart TD
+    subgraph upstream["<b>Upstream</b><br>gitroomhq/postiz-app"]
+        utag["vX.Y.Z<br>(release tags)"]
+        umain["main"]
+    end
+
+    subgraph local["<b>Local</b>"]
+        lmain["main<br><i>upstream mirror — NEVER commit</i>"]
+        lfeat["feat/*<br><i>isolated features, rebased on main</i>"]
+        ldev["dev<br><i>fork integration, merge feat/*</i>"]
+    end
+
+    subgraph origin["<b>Origin</b><br>oopen/postiz-libre"]
+        omain["main"]
+        odev["dev"]
+    end
+
+    umain -- "1️⃣  git fetch → reset --hard upstream/TAG" --> lmain
+    lmain -- "2️⃣  rebase" --> lfeat
+    lfeat -- "3️⃣  git merge --no-ff" --> ldev
+    lmain -- "push --force-with-lease" --> omain
+    ldev -- "push" --> odev
+    lfeat -- "PR (clean diff, no fork files)" --> umain
 ```
 
 | Branch | Role | Golden Rule |
@@ -76,8 +88,10 @@ git rebase main
 # Handle conflicts → git add <file> → git rebase --continue
 
 # Rebase feature branches
-git checkout feat/unlock-ai-vendor-lockin && git rebase main
-git checkout feat/compose-improvements && git rebase main
+for branch in $(git branch --list 'feat/*' | sed 's/^[* ]*//'); do
+  echo "--- rebasing $branch ---"
+  git checkout "$branch" && git rebase main
+done
 ```
 
 ### Step 3: Merge features back into `dev`
@@ -88,8 +102,10 @@ The rebase changed commit SHA, so `dev` does not have them as tracked objects.
 
 ```bash
 git checkout dev
-git merge feat/compose-improvements --no-ff
-git merge feat/unlock-ai-vendor-lockin --no-ff
+for branch in $(git branch --list 'feat/*' | sed 's/^[* ]*//'); do
+  echo "--- merging $branch ---"
+  git merge "$branch" --no-ff
+done
 ```
 
 ### Step 4: Push
@@ -99,8 +115,9 @@ The `protect-dev` ruleset blocks `--force` but allows `--force-with-lease`.
 
 ```bash
 git push origin dev --force-with-lease
-git push origin feat/unlock-ai-vendor-lockin --force-with-lease
-git push origin feat/compose-improvements --force-with-lease
+for branch in $(git branch --list 'feat/*' | sed 's/^[* ]*//'); do
+  git push origin "$branch" --force-with-lease
+done
 ```
 
 ### Known conflicts
@@ -135,27 +152,30 @@ Releases are cut from `dev`, never from `main`.
 
 ### Versioning
 
-```
-v{upstream major}.{upstream minor}.{upstream patch}-libre{-n}
+| Pattern | Example | Meaning |
+|---------|---------|---------|
+| `vX.Y.Z-libre` | `v2.22.1-libre` | First libre release on upstream v2.22.1 |
+| `vX.Y.Z-libre-N` | `v2.22.1-libre-2` | Third libre release, same upstream patch |
 
-v2.22.1-libre        ← first release (based on upstream v2.22.1)
-v2.22.1-libre-1      ← second release (upstream unchanged)
-v2.23.0-libre        ← after sync to upstream v2.23.0
-```
+Docker floating tags are independent — e.g. `v2.22-libre` always points to the latest `v2.22.x-libre`.
 
-Docker tags are published automatically by CI (semver):
-`v2.22.1-libre` (exact), `v2.22-libre` (latest minor), `v2-libre` (latest major), `latest`.
+Docker tags are published automatically by CI:
+`v2.22-libre` (exact), `v2.22-libre` (latest minor), `v2-libre` (latest major), `latest`.
 
 ### Release checklist
 
 ```bash
-# 1. Find the upstream version our dev branch is based on
-UPSTREAM_TAG=$(git tag --merged $(git merge-base dev upstream/main) --sort=-v:refname | grep -E '^v[0-9]' | head -1)
+# 1. Find the latest upstream patch tag for the current minor
+UPSTREAM_TAG=$(git ls-remote --tags upstream \
+  | grep -E 'refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' \
+  | sed 's/.*refs\/tags\///' \
+  | sort -V | tail -1)
 
-# 2. Tag
-git tag -a ${UPSTREAM_TAG}-libre -m "Release ${UPSTREAM_TAG}-libre — description"
+# 2. Derive libre tag (append -libre suffix)
+LIBRE_TAG="${UPSTREAM_TAG}-libre"
 
-# 3. Push (CI builds and pushes Docker image automatically)
+# 3. Tag and push (CI builds + pushes Docker image automatically)
+git tag -a "$LIBRE_TAG" -m "Release $LIBRE_TAG — based on upstream $UPSTREAM_TAG"
 git push origin dev --tags
 ```
 
@@ -169,7 +189,7 @@ docker pull ghcr.io/oopen/postiz-libre:latest
 
 # Pull a specific tag
 docker pull ghcr.io/oopen/postiz-libre:dev
-docker pull ghcr.io/oopen/postiz-libre:v2.22.1-libre
+docker pull ghcr.io/oopen/postiz-libre:v2.22-libre
 
 # Build locally
 docker build -f Dockerfile.dev --target prod -t postiz-libre:local .

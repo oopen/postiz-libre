@@ -28,7 +28,7 @@
 
 ## Done
 
-- `v2.22.1-libre-6` — first stable release: Docker CI with semver floating tags, repo cleanup, rename, license fix (2026-07-31)
+- `v2.22.1-libre` — first stable release: Docker CI with semver floating tags, repo cleanup, rename, license fix (2026-07-31)
 
 ## Sync log
 
