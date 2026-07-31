@@ -15,7 +15,7 @@ Versions are tagged `vX.Y.Z-libre` from the `dev` branch.
   - 9 new env vars: `OPENAI_BASE_URL`, `OPENAI_MODEL`, `OPENAI_IMAGE_*`, `OPENAI_CLASSIFIER_*`, `OPENAI_MAX_TOKENS`
   - Retry logic for 429 rate-limit, provider-agnostic error handling
   - Inline error banners in agent chat with i18n keys
-  - (Commit `496bf78a`, 15 files, +581/−39)
+  - (Commit `daa1c447`, 15 files, +581/−39)
 
 - **feat(compose):** containerized dev, multi-stage Dockerfile, health endpoints
   - `Dockerfile.dev`: 4 stages (base, prod, dev, build)

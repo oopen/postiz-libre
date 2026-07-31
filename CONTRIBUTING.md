@@ -3,7 +3,7 @@
 ## Before You Start
 
 **Try upstream first.** This fork exists only because `gitroomhq/postiz-app` systematically
-ignores community PRs (see [FORK-README.md](FORK-README.md) for evidence).
+ignores community PRs (see [FORK-README.md](FORK-README.md) and [UPSTREAM-ISSUES.md](UPSTREAM-ISSUES.md) for evidence).
 
 1. Open your PR on `gitroomhq/postiz-app`
 2. Wait a reasonable time (30 days) or until it is clear the PR is ignored/closed without merit

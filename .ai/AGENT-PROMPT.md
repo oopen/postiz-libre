@@ -26,6 +26,7 @@ execute commands. Complete the checklist first.
 - [ ] Read `FORK-GIT-WORKFLOW.md`
 - [ ] Read `FORK-CHANGELOG.md`
 - [ ] Read `FORK-ROADMAP.md`
+- [ ] Read `UPSTREAM-ISSUES.md`
 - [ ] Run `git branch -a`
 - [ ] Run `git log --oneline --graph dev -10`
 - [ ] Run `git status`
@@ -50,7 +51,7 @@ If the user asks a question before the checklist is done, respond ONLY with:
 
 5. **NEVER merge `dev` into `feat/*` branches. `dev → feat/*` is FORBIDDEN.**
    - Forbidden: `git merge dev`, `git rebase dev` from any `feat/*` branch
-   - `dev` contains fork identity files (FORK-*.md, AGENT-PROMPT.md) that must NEVER appear in upstream PRs
+   - `dev` contains fork identity files (FORK-*.md, UPSTREAM-ISSUES.md, AGENT-PROMPT.md) that must NEVER appear in upstream PRs
    - `feat/*` branches stay rebased on `main` — clean, PR-ready, no fork pollution
 
 6. **ALL git write operations (add, commit, merge, push, stash, tag) are FORBIDDEN.**
@@ -157,7 +158,7 @@ If you need to know which environment variables exist, read `.env.example` inste
 
 **For feat/* PRs targeting upstream:**
 
-- Only include files relevant to the feature. No fork identity (FORK-*.md, AGENT-PROMPT.md, .ai/, .github/workflows/docker-build.yml).
+- Only include files relevant to the feature. No fork identity (FORK-*.md, UPSTREAM-ISSUES.md, AGENT-PROMPT.md, .ai/, .github/workflows/docker-build.yml).
 - Use existing patterns, file structure, and naming conventions from the original codebase.
 - Do NOT introduce new dependencies without strong justification.
 - Keep diff size minimal — smaller diffs are easier for upstream to review and merge.
@@ -223,7 +224,6 @@ just frontend-health # check frontend + backend status
 just check-ports     # check TCP port connectivity
 just open            # open discovered web services in browser
 just ports           # show service port map
-just push [branch]   # build + push branch to origin (HUMAN ONLY, never by AI)
 ```
 
 ---

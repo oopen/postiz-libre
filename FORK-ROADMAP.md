@@ -26,10 +26,6 @@
 |------|-----------|
 | Sync upstream (fetch → rebase main → rebase dev → rebase feat/*) | Per release |
 
-## Done
-
-- `v2.22.1-libre` — first stable release: Docker CI with semver floating tags, repo cleanup, rename, license fix (2026-07-31)
-
 ## Sync log
 
 | Date | Upstream commit | Action |
