@@ -4,26 +4,31 @@
 
 ## Now
 
-| Tâche | Depuis |
-|-------|--------|
+| Task | Since |
+|-------|-------|
 | 🔴 Polish `feat/compose-improvements` for upstream PR | 2026-07-31 |
 
 ## Backlog
 
-| Prio | Tâche | Ver | Bloqué par | Qui |
-|:---:|-------|:---:|---|:---:|
-| 🔴 | Sync upstream (fetch → rebase main → rebase dev → rebase feat/*) | — | — | Human |
-| 🔴 | PR `feat/compose-improvements` → `gitroomhq/postiz-app:main` | — | Upstream sync | Human |
+| Prio | Task | Ver | Blocked by | Who |
+|:---:|------|:---:|---|:---:|
+| 🔴 | PR `feat/compose-improvements` → upstream | — | Upstream sync | Human |
 | 🔴 | PR `feat/unlock-ai-vendor-lockin` → upstream | — | Upstream sync | Human |
-| 🟡 | Multi-env: `docker-compose.test.yaml` + `ENV=test` | v0.2 | — | AI |
-| 🟡 | Multi-env: test-specific seeding/health checks | v0.2 | test.yaml | AI |
-| 🟢 | `.env.example` — document Docker vs host mode | v0.2 | — | AI |
-| 🟢 | Fork-specific CODE_OF_CONDUCT.md + CONTRIBUTING.md | v0.2 | — | AI |
-| 🟢 | Replace nginx with Ferron (auto Let's Encrypt) | v0.3 | Working Docker build | AI |
+| 🟡 | Multi-env: `docker-compose.test.yaml` + `ENV=test` | v2.23 | — | AI |
+| 🟡 | Multi-env: test-specific seeding/health checks | v2.23 | test.yaml | AI |
+| 🟢 | `.env.example` — document Docker vs host mode | v2.23 | — | AI |
+| 🟢 | Fork-specific CODE_OF_CONDUCT.md + CONTRIBUTING.md | v2.23 | — | AI |
+| 🟢 | Replace nginx with Ferron (auto Let's Encrypt) | v2.24 | feat/compose-improvements merged upstream | AI |
+
+## Maintenance
+
+| Task | Frequency | Who |
+|------|-----------|-----|
+| Sync upstream (fetch → rebase main → rebase dev → rebase feat/*) | Per release | Human |
 
 ## Done
 
-- `v2.22.1-libre` — first Postiz Libre release: Docker CI, repo cleanup, AI unlock, compose (2026-07-31)
+- `v2.22.1-libre-6` — first stable release: Docker CI with semver floating tags, repo cleanup, rename, license fix (2026-07-31)
 
 ## Sync log
 
