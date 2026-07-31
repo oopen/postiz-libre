@@ -285,8 +285,52 @@ build-purge:
 
 # Build + push to origin
 push branch="dev": build
-	@echo "🚀 Pushing to origin/{{ branch }}..."
-	git push origin {{ branch }}
+	@echo "🚀 Pushing to origin/{{ branch }} + tags..."
+	git push origin {{ branch }} --tags
+
+# ==============================================================================
+# Tag & Release
+# ==============================================================================
+
+# List all libre release tags (newest first)
+tag:
+	git tag --list 'v*-libre*' --sort=-v:refname
+
+# Compute the next libre tag without creating it (read-only)
+tag-next:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	if ! git remote get-url upstream > /dev/null 2>&1; then
+		echo "❌ No 'upstream' remote configured" >&2; exit 1
+	fi
+	UPSTREAM_TAG=$(git ls-remote --tags upstream 2>/dev/null | grep -E 'refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/.*refs\/tags\///' | sort -V | tail -1)
+	LATEST_LIBRE=$(git tag --list "${UPSTREAM_TAG}-libre*" --sort=-v:refname | head -1)
+	if [ -z "$LATEST_LIBRE" ]; then
+		echo "${UPSTREAM_TAG}-libre"
+	else
+		UP_ESC=$(echo "$UPSTREAM_TAG" | sed 's/\./\\./g')
+		SUFFIX=$(echo "$LATEST_LIBRE" | sed "s/.*${UP_ESC}-libre//; s/^-//")
+		echo "${UPSTREAM_TAG}-libre-$(( ${SUFFIX:-0} + 1 ))"
+	fi
+
+# Create annotated tag (must be on dev, tree clean, stack healthy)
+tag-create:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	BRANCH=$(git branch --show-current)
+	if [ "$BRANCH" != "dev" ]; then echo "❌ Must be on 'dev' branch" >&2; exit 1; fi
+	if ! git diff-index --quiet HEAD --; then echo "❌ Working tree is dirty" >&2; exit 1; fi
+	echo "🧪 Checking stack health..."
+	if ! just backend-health > /dev/null 2>&1; then echo "❌ Backend unhealthy" >&2; exit 1; fi
+	if ! just frontend-health > /dev/null 2>&1; then echo "❌ Frontend unhealthy" >&2; exit 1; fi
+	TAG=$(just tag-next)
+	if [ -z "${TAG:-}" ]; then echo "❌ Could not determine next tag" >&2; exit 1; fi
+	if git rev-parse "refs/tags/$TAG" > /dev/null 2>&1; then echo "❌ Tag $TAG already exists" >&2; exit 1; fi
+	echo "  Next tag: $TAG"
+	read -p "Create tag? (y/N) " -n 1 -r
+	echo; if [[ ! $REPLY =~ ^[Yy]$ ]]; then echo "Aborted."; exit 0; fi
+	git tag -a "$TAG" -m "Release $TAG"
+	echo "✅ $TAG created"
 
 # ==============================================================================
 # Private Helpers (Hidden from 'just --list')
