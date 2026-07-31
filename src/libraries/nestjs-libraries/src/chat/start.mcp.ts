@@ -44,7 +44,8 @@ export const startMcp = async (app: INestApplication) => {
 
   const server = new MCPServer(serverConfig);
 
-  const oauthResource = new URL('/mcp-oauth', process.env.NEXT_PUBLIC_BACKEND_URL!).toString();
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
+  const oauthResource = new URL('/mcp-oauth', baseUrl).toString();
   const oauthMiddleware = createOAuthMiddleware({
     oauth: {
       resource: oauthResource,

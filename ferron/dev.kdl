@@ -1,0 +1,26 @@
+localhost {
+    location "/api" remove_base=#true {
+        proxy "http://postiz-backend:3000/api"
+        proxy_request_header_replace "X-Real-IP" "{header:X-Real-IP}"
+        proxy_request_header_replace "X-Forwarded-For" "{header:X-Forwarded-For}"
+        proxy_request_header_replace "X-Forwarded-Proto" "{header:X-Forwarded-Proto}"
+        proxy_request_header_replace "Reload" "{header:Reload}"
+        proxy_request_header_replace "Onboarding" "{header:Onboarding}"
+        proxy_request_header_replace "Activate" "{header:Activate}"
+        proxy_request_header_replace "Auth" "{header:Auth}"
+        proxy_request_header_replace "Showorg" "{header:Showorg}"
+        proxy_request_header_replace "Impersonate" "{header:Impersonate}"
+    }
+
+    location "/uploads" {
+        root "/uploads"
+    }
+
+    location "/" {
+        proxy "http://postiz-frontend:4200"
+        proxy_request_header_replace "Host" "{header:Host}"
+        proxy_request_header_replace "X-Real-IP" "{header:X-Real-IP}"
+        proxy_request_header_replace "X-Forwarded-For" "{header:X-Forwarded-For}"
+        proxy_request_header_replace "X-Forwarded-Proto" "{header:X-Forwarded-Proto}"
+    }
+}
