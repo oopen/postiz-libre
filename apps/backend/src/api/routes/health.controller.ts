@@ -11,7 +11,7 @@ export class HealthController {
     private readonly _temporalService: TemporalService,
   ) {}
 
-  @Get('/')
+  @Get('/health')
   async check() {
     const checks: Record<string, string> = {};
 
