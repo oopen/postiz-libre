@@ -106,6 +106,10 @@ stop:
 app-logs:
 	just compose logs -f postiz-backend postiz-frontend
 
+# Live container resource usage (CPU / RAM)
+stats:
+	just compose stats --no-stream
+
 # Check backend application health (DB, Redis, Temporal)
 backend-health:
 	#!/usr/bin/env bash
