@@ -28,7 +28,7 @@ RUN pnpm install --frozen-lockfile
 # ── builder ──
 FROM deps AS builder
 COPY . .
-RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm run build
+RUN NODE_OPTIONS="--max-old-space-size=4096" NEXT_BUILD_WORKERS=4 pnpm run build
 
 # ── backend ──
 FROM base AS backend

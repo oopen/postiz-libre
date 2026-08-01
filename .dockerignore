@@ -5,10 +5,10 @@
 node_modules/
 .pnpm-store/
 
-# Build outputs
-dist/
-.next/
-*.tsbuildinfo
+# Build outputs (explicit ** for subdirectories)
+**/dist/
+**/.next/
+**/*.tsbuildinfo
 
 # Environment
 .env
