@@ -1,0 +1,180 @@
+# Development stack — hot-reload, file mounts, admin tools.
+# Usage: docker compose -f compose.common.yml -f compose.dev.yml up
+
+include:
+  - compose.common.yml
+
+services:
+
+  postiz-db-init:
+    build:
+      context: ./src
+      dockerfile: ../Dockerfile
+      target: deps
+    container_name: postiz-db-init
+    command: pnpm run prisma-db-push
+    environment:
+      DATABASE_URL: "postgresql://postiz-local:postiz-local-pwd@postiz-postgres:5432/postiz-db-local"
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
+    networks:
+      - postiz-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  postiz-backend:
+    build:
+      context: ./src
+      dockerfile: ../Dockerfile
+      target: backend
+    container_name: postiz-backend
+    command: ["sh", "-c", "pnpm install --frozen-lockfile && pnpm run dev:backend"]
+    volumes:
+      - ./src:/app
+      - be-pnpm-store:/app/.pnpm-store
+      - be-node_modules:/app/node_modules
+      - be-app-node_modules:/app/apps/backend/node_modules
+    ports:
+      - 127.0.0.1:0:3000
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=3072"
+      CHOKIDAR_USEPOLLING: "false"
+      PORT: "3000"
+      DATABASE_URL: "postgresql://postiz-local:postiz-local-pwd@postiz-postgres:5432/postiz-db-local"
+      REDIS_URL: "redis://postiz-redis:6379"
+      TEMPORAL_ADDRESS: "temporal:7233"
+      JWT_SECRET: "local-dev-jwt-secret-not-for-production-123456789"
+      FRONTEND_URL: "http://localhost:4200"
+      STORAGE_PROVIDER: "local"
+      IS_GENERAL: "true"
+      CI: "true"
+    depends_on:
+      postiz-postgres:
+        condition: service_started
+      postiz-redis:
+        condition: service_started
+    networks:
+      - postiz-network
+      - temporal-network
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+        reservations:
+          memory: 2048M
+
+  postiz-frontend:
+    profiles:
+      - frontend
+    build:
+      context: ./src
+      dockerfile: ../Dockerfile
+      target: frontend
+    container_name: postiz-frontend
+    command: ["sh", "-c", "cd /app && pnpm install --frozen-lockfile && pnpm run dev:frontend"]
+    volumes:
+      - ./src:/app
+      - fe-pnpm-store:/app/.pnpm-store
+      - fe-node_modules:/app/node_modules
+      - fe-app-node_modules:/app/apps/frontend/node_modules
+      - fe-next:/app/apps/frontend/.next
+    ports:
+      - 127.0.0.1:0:4200
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=3072"
+      WATCHPACK_POLLING: "false"
+      FRONTEND_PORT: "4200"
+      BACKEND_INTERNAL_URL: "http://postiz-backend:3000"
+      STORAGE_PROVIDER: "local"
+      CI: "true"
+    depends_on:
+      postiz-backend:
+        condition: service_started
+    networks:
+      - postiz-network
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+        reservations:
+          memory: 2048M
+
+  postiz-pg-admin:
+    image: dpage/pgadmin4:latest
+    container_name: postiz-pg-admin
+    ports:
+      - 127.0.0.1:0:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    networks:
+      - postiz-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+
+  postiz-redisinsight:
+    image: redis/redisinsight:latest
+    container_name: postiz-redisinsight
+    links:
+      - postiz-redis
+    ports:
+      - 127.0.0.1:0:5540
+    volumes:
+      - redisinsight:/data
+    networks:
+      - postiz-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+
+  postiz-build:
+    profiles:
+      - build
+    build:
+      context: ./src
+      dockerfile: ../Dockerfile
+      target: builder
+    container_name: postiz-build
+    command: ["sh", "-c", "pnpm install --frozen-lockfile && pnpm run build"]
+    volumes:
+      - ./src:/app
+      - build-pnpm-store:/app/.pnpm-store
+      - build-node_modules:/app/node_modules
+      - build-backend-node_modules:/app/apps/backend/node_modules
+      - build-frontend-node_modules:/app/apps/frontend/node_modules
+      - build-orchestrator-node_modules:/app/apps/orchestrator/node_modules
+      - build-next:/app/apps/frontend/.next
+    environment:
+      CI: "true"
+      NODE_OPTIONS: "--max-old-space-size=3584"
+    deploy:
+      resources:
+        limits:
+          memory: 5120M
+        reservations:
+          memory: 2560M
+
+volumes:
+  be-pnpm-store:
+  be-node_modules:
+  be-app-node_modules:
+  fe-pnpm-store:
+  fe-node_modules:
+  fe-app-node_modules:
+  fe-next:
+  build-pnpm-store:
+  build-node_modules:
+  build-backend-node_modules:
+  build-frontend-node_modules:
+  build-orchestrator-node_modules:
+  build-next:
+  redisinsight:
