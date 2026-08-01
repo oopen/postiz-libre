@@ -1,3 +1,14 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# AI AGENT SAFETY RULES — DO NOT REMOVE
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEVER execute:  git add, git commit, git merge, git push, just git-push
+# NEVER execute:  git branch -D, git reset --hard, git clean -fd
+# NEVER execute:  just purge, just reset without EXPLICIT user confirmation
+# NEVER delete:   files, branches, tags without EXPLICIT user confirmation
+# AI agents MUST: present diffs, suggest commit messages, STOP after coding
+# The USER always: reviews code, stages, commits, and pushes personally
+# ═══════════════════════════════════════════════════════════════════════════════
+
 # Define precise web services that require http:// or https:// routing.
 # Format: "service_name:internal_port" (space-separated)
 WEB_SERVICES := "temporal-ui:8080 postiz-pg-admin:80 postiz-redisinsight:5540 postiz-frontend:4200 postiz-backend:3000 ferron:80"
