@@ -7,6 +7,7 @@ include:
 services:
 
   postiz-db-init:
+    pull_policy: build
     build:
       context: ./src
       dockerfile: ../Dockerfile
@@ -22,9 +23,10 @@ services:
       - postiz-network
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: none
 
   postiz-backend:
+    pull_policy: build
     build:
       context: ./src
       dockerfile: ../Dockerfile
@@ -68,6 +70,7 @@ services:
   postiz-frontend:
     profiles:
       - frontend
+    pull_policy: build
     build:
       context: ./src
       dockerfile: ../Dockerfile
@@ -139,6 +142,7 @@ services:
   postiz-build:
     profiles:
       - build
+    pull_policy: build
     build:
       context: ./src
       dockerfile: ../Dockerfile

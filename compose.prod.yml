@@ -1,54 +1,21 @@
-# Production stack — standalone containers, Ferron reverse proxy, no mounts.
-# Usage: ENV=prod FERRON_CONFIG=./ferron/prod.kdl docker compose -f compose.common.yml -f compose.prod.yml up
+# Production overrides — images from GHCR, restart always, secure limits.
+# Usage: ENV=prod docker compose -f compose.common.yml -f compose.prod.yml up
 
 include:
   - compose.common.yml
 
 services:
 
-  postiz-db-init:
-    build:
-      context: ./src
-      dockerfile: ../Dockerfile
-      target: deps
-    container_name: postiz-db-init
-    command: pnpm run prisma-db-push
-    environment:
-      DATABASE_URL: "postgresql://postiz-local:postiz-local-pwd@postiz-postgres:5432/postiz-db-local"
-    depends_on:
-      postiz-postgres:
-        condition: service_healthy
-    networks:
-      - postiz-network
-    deploy:
-      restart_policy:
-        condition: on-failure
-
   postiz-backend:
-    build:
-      context: ./src
-      dockerfile: ../Dockerfile
-      target: backend
-    container_name: postiz-backend
-    restart: always
-    environment:
-      NODE_OPTIONS: "--max-old-space-size=384"
-      PORT: "3000"
-      DATABASE_URL: "postgresql://postiz-local:postiz-local-pwd@postiz-postgres:5432/postiz-db-local"
-      REDIS_URL: "redis://postiz-redis:6379"
-      TEMPORAL_ADDRESS: "temporal:7233"
-      JWT_SECRET: "random-string-change-me-in-production"
-      FRONTEND_URL: "http://localhost:4200"
-      STORAGE_PROVIDER: "local"
-      IS_GENERAL: "true"
     depends_on:
       postiz-postgres:
         condition: service_started
       postiz-redis:
         condition: service_started
-    networks:
-      - postiz-network
-      - temporal-network
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=384"
+      PORT: "3000"
+    restart: always
     deploy:
       resources:
         limits:
@@ -57,21 +24,10 @@ services:
           memory: 256M
 
   postiz-frontend:
-    build:
-      context: ./src
-      dockerfile: ../Dockerfile
-      target: frontend
-    container_name: postiz-frontend
-    restart: always
     environment:
       NODE_OPTIONS: "--max-old-space-size=384"
       FRONTEND_PORT: "4200"
-      BACKEND_INTERNAL_URL: "http://postiz-backend:3000"
-    depends_on:
-      postiz-backend:
-        condition: service_started
-    networks:
-      - postiz-network
+    restart: always
     deploy:
       resources:
         limits:
@@ -80,29 +36,23 @@ services:
           memory: 256M
 
   postiz-orchestrator:
-    build:
-      context: ./src
-      dockerfile: ../Dockerfile
-      target: orchestrator
-    container_name: postiz-orchestrator
-    restart: always
-    environment:
-      NODE_OPTIONS: "--max-old-space-size=256"
-      ORCHESTRATOR_PORT: "3002"
-      DATABASE_URL: "postgresql://postiz-local:postiz-local-pwd@postiz-postgres:5432/postiz-db-local"
-      REDIS_URL: "redis://postiz-redis:6379"
-      TEMPORAL_ADDRESS: "temporal:7233"
     depends_on:
       postiz-postgres:
         condition: service_started
       postiz-redis:
         condition: service_started
-    networks:
-      - postiz-network
-      - temporal-network
+    restart: always
+
+  postiz-db-init:
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
     deploy:
-      resources:
-        limits:
-          memory: 384M
-        reservations:
-          memory: 128M
+      restart_policy:
+        condition: on-failure
+
+  postiz-postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postiz-password}
+      POSTGRES_USER: ${POSTGRES_USER:-postiz-user}
+      POSTGRES_DB: ${POSTGRES_DB:-postiz-db-local}

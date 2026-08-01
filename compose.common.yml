@@ -167,7 +167,7 @@ services:
     environment:
       FERRON_DOMAIN: "${FERRON_DOMAIN:-*}"
     volumes:
-      - ${FERRON_CONFIG}:/etc/ferron.kdl:ro
+      - ${FERRON_CONFIG:-./ferron/dev.kdl}:/etc/ferron.kdl:ro
       - ferron-acme:/var/cache/ferron-acme
     networks:
       - postiz-network
@@ -178,6 +178,66 @@ services:
           memory: 64M
         reservations:
           memory: 32M
+
+  postiz-backend:
+    container_name: postiz-backend
+    image: ghcr.io/oopen/postiz-libre:latest
+    environment:
+      SERVICE: backend
+    networks:
+      - postiz-network
+      - temporal-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  postiz-frontend:
+    container_name: postiz-frontend
+    image: ghcr.io/oopen/postiz-libre:latest
+    environment:
+      SERVICE: frontend
+    networks:
+      - postiz-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  postiz-orchestrator:
+    container_name: postiz-orchestrator
+    image: ghcr.io/oopen/postiz-libre:latest
+    environment:
+      SERVICE: orchestrator
+      NODE_OPTIONS: "--max-old-space-size=256"
+      ORCHESTRATOR_PORT: "3002"
+    networks:
+      - postiz-network
+      - temporal-network
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 128M
+
+  postiz-db-init:
+    container_name: postiz-db-init
+    image: ghcr.io/oopen/postiz-libre:latest
+    environment:
+      SERVICE: db-init
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
+    networks:
+      - postiz-network
+    deploy:
+      restart_policy:
+        condition: on-failure
 
 volumes:
   postgres-volume:
