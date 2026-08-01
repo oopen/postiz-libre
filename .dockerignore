@@ -1,23 +1,37 @@
-# We want the docker builds to be clean, and as fast as possible. Don't send
-# any half-built stuff in the build context as a pre-caution (also saves copying
-# 180k files in node_modules that isn't used!).
-**/node_modules
-node_modules/*
-node_modules
-docker-data/*
-dist
-.nx
-/apps/frontend/.next
-/apps/backend/dist
-/apps/workers/dist
-/apps/cron/dist
-/apps/commands/dist
-.devcontainer
-**/.git
-**/*.md
-**/LICENSE
-**/npm-debug.log
-**/*.vscode
-.git
-.github
-reports
+# Git
+.git/
+
+# Dependencies (installed by pnpm)
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+
+# Compose & config
+compose.*.yml
+docker-compose.*
+justfile
+
+# Documentation
+*.md
+FORK-*
+UPSTREAM-ISSUES.md
+.ai/
+
+# CI
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Misc
+.playwright-mcp/

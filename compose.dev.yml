@@ -9,8 +9,8 @@ services:
   postiz-db-init:
     pull_policy: build
     build:
-      context: ./src
-      dockerfile: ../Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: deps
     container_name: postiz-db-init
     command: pnpm run prisma-db-push
@@ -28,20 +28,20 @@ services:
   postiz-backend:
     pull_policy: build
     build:
-      context: ./src
-      dockerfile: ../Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: backend
     container_name: postiz-backend
     command: ["sh", "-c", "pnpm install --frozen-lockfile && pnpm run dev:backend"]
     volumes:
-      - ./src:/app
+      - .:/app
       - be-pnpm-store:/app/.pnpm-store
       - be-node_modules:/app/node_modules
       - be-app-node_modules:/app/apps/backend/node_modules
     ports:
       - 127.0.0.1:0:3000
     environment:
-      NODE_OPTIONS: "--max-old-space-size=3072"
+      NODE_OPTIONS: "--max-old-space-size=4096"
       CHOKIDAR_USEPOLLING: "false"
       PORT: "3000"
       DATABASE_URL: "postgresql://postiz-local:postiz-local-pwd@postiz-postgres:5432/postiz-db-local"
@@ -63,22 +63,22 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4096M
+          memory: 5120M
         reservations:
-          memory: 2048M
+          memory: 2560M
 
   postiz-frontend:
     profiles:
       - frontend
     pull_policy: build
     build:
-      context: ./src
-      dockerfile: ../Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: frontend
     container_name: postiz-frontend
     command: ["sh", "-c", "cd /app && pnpm install --frozen-lockfile && pnpm run dev:frontend"]
     volumes:
-      - ./src:/app
+      - .:/app
       - fe-pnpm-store:/app/.pnpm-store
       - fe-node_modules:/app/node_modules
       - fe-app-node_modules:/app/apps/frontend/node_modules
@@ -144,8 +144,8 @@ services:
       - orchestrator
     pull_policy: build
     build:
-      context: ./src
-      dockerfile: ../Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: orchestrator
 
   postiz-build:
@@ -153,13 +153,13 @@ services:
       - build
     pull_policy: build
     build:
-      context: ./src
-      dockerfile: ../Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: builder
     container_name: postiz-build
     command: ["sh", "-c", "pnpm install --frozen-lockfile && pnpm run build"]
     volumes:
-      - ./src:/app
+      - .:/app
       - build-pnpm-store:/app/.pnpm-store
       - build-node_modules:/app/node_modules
       - build-backend-node_modules:/app/apps/backend/node_modules

@@ -1,7 +1,7 @@
 # Postiz-libre multi-stage Dockerfile
-# Build context: ./src
-# Build: docker build -f ../Dockerfile --target <stage> .
-# Targets: base, deps, builder, backend, frontend, orchestrator
+# Build context: .
+# Build: docker build -f Dockerfile --target <stage> .
+# Targets: base, deps, builder, backend, frontend, orchestrator, runtime
 
 FROM node:24-bookworm-slim AS base
 RUN apt-get update && apt-get install -y --no-install-recommends \

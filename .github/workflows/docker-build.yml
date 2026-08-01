@@ -76,7 +76,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: ./src
+          context: .
           file: ./Dockerfile
           target: runtime
           push: true

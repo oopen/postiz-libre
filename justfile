@@ -97,8 +97,9 @@ up:
 	echo "⏳ Waiting for backend health..."
 	until just app-backend-health > /dev/null 2>&1; do sleep 2; done
 	BACKEND_PORT=$(just compose port postiz-backend 3000 | cut -d: -f2)
-	mkdir -p src/apps/frontend
-	echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:$BACKEND_PORT" > src/apps/frontend/.env.local
+	mkdir -p apps/frontend
+	echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:$BACKEND_PORT" > apps/frontend/.env.local
+	echo "NODE_OPTIONS=--max-old-space-size=4096" >> apps/frontend/.env.local
 	echo "✅ Backend ready at localhost:$BACKEND_PORT"
 	echo "🚀 Starting frontend..."
 	just compose --profile frontend up -d --remove-orphans
