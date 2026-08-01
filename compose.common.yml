@@ -164,8 +164,10 @@ services:
     ports:
       - 127.0.0.1:0:80
       - 127.0.0.1:0:443
+    environment:
+      FERRON_DOMAIN: "${FERRON_DOMAIN:-*}"
     volumes:
-      - ${FERRO_UN_CONFIG:-./ferron/dev.kdl}:/etc/ferron.kdl:ro
+      - ${FERRON_CONFIG}:/etc/ferron.kdl:ro
       - ferron-acme:/var/cache/ferron-acme
     networks:
       - postiz-network

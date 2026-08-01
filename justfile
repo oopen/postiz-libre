@@ -18,6 +18,15 @@ export COMPOSE_FILE := \
     "compose.dev.yml" \
   }
 
+export FERRON_CONFIG := \
+  if ENV == "prod" { \
+    "./ferron/prod.kdl" \
+  } else if ENV == "test" { \
+    "./ferron/test.kdl" \
+  } else { \
+    "./ferron/dev.kdl" \
+  }
+
 set positional-arguments := true
 
 # ==============================================================================
