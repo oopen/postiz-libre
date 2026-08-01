@@ -170,6 +170,8 @@ purge:
 	just compose --profile '"*"' down --remove-orphans --volumes --rmi local
 	PROJECT=$(just _project-name); docker volume ls -q --filter name="${PROJECT}_" 2>/dev/null | while read -r vol; do docker volume rm -f "$vol" > /dev/null 2>&1 || true; done
 	echo -e "✨ ${BOLD}Stack successfully purged!${RESET}"
+	echo ""
+	just is-purged 2>&1 || true
 
 # Parse 'docker compose ps' output to extract real host ports with colorized UI
 ports:
