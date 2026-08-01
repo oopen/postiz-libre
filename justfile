@@ -102,13 +102,13 @@ up:
 
 # Force download, rebuild, and recreate the entire stack
 rebuild:
-	just compose up -d --remove-orphans --pull always --build --force-recreate --renew-anon-volumes
+	just compose --profile frontend up -d --remove-orphans --pull always --build --force-recreate --renew-anon-volumes
 	just ports
 	just check-ports
 
 # Stop containers without removing them
 stop:
-	just compose stop
+	just compose --profile '"*"' stop
 
 # Tail the app server logs
 app-logs:
