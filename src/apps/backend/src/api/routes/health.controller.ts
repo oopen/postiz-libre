@@ -4,14 +4,14 @@ import { ioRedis } from '@gitroom/nestjs-libraries/redis/redis.service';
 import { TemporalService } from 'nestjs-temporal-core';
 import { Connection } from '@temporalio/client';
 
-@Controller()
+@Controller('health')
 export class HealthController {
   constructor(
     private readonly _prismaService: PrismaService,
     private readonly _temporalService: TemporalService,
   ) {}
 
-  @Get('/health')
+  @Get()
   async check() {
     const checks: Record<string, string> = {};
 

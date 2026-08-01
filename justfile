@@ -115,7 +115,7 @@ backend-health:
 	set -euo pipefail
 	BACKEND_PORT=$(just compose port postiz-backend 3000 2>/dev/null | cut -d: -f2)
 	if [ -z "${BACKEND_PORT:-}" ]; then echo "❌ Backend is not running"; exit 1; fi
-	curl -s "http://localhost:$BACKEND_PORT/" || { echo "❌ Backend not responding"; exit 1; }
+	curl -s "http://localhost:$BACKEND_PORT/health" || { echo "❌ Backend not responding"; exit 1; }
 
 # Check frontend application health (includes backend status)
 frontend-health:
@@ -123,7 +123,7 @@ frontend-health:
 	set -euo pipefail
 	FRONTEND_PORT=$(just compose port postiz-frontend 4200 2>/dev/null | cut -d: -f2)
 	if [ -z "${FRONTEND_PORT:-}" ]; then echo "❌ Frontend is not running"; exit 1; fi
-	curl -s "http://localhost:$FRONTEND_PORT/api/health" || { echo "❌ Frontend not responding"; exit 1; }
+	curl -s "http://localhost:$FRONTEND_PORT/health" || { echo "❌ Frontend not responding"; exit 1; }
 
 # Fast and safe reboot of the stack without data loss
 restart: stop up
