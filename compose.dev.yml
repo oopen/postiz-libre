@@ -139,6 +139,15 @@ services:
         reservations:
           memory: 64M
 
+  postiz-orchestrator:
+    profiles:
+      - orchestrator
+    pull_policy: build
+    build:
+      context: ./src
+      dockerfile: ../Dockerfile
+      target: orchestrator
+
   postiz-build:
     profiles:
       - build
