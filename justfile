@@ -139,7 +139,7 @@ restart: stop up
 
 # Stop and remove all containers, networks, and database volumes, then fresh start
 reset:
-	just compose --profile frontend --profile build down --remove-orphans --volumes
+	just compose --profile '"*"' down --remove-orphans --volumes
 	just up
 
 # Deep clean this local Docker stack
@@ -156,7 +156,7 @@ purge:
 		exit 0
 	fi
 	echo "🧹 Destroying stack containers, volumes, and locally built images..."
-	just compose --profile frontend --profile build down --remove-orphans --volumes --rmi local
+	just compose --profile '"*"' down --remove-orphans --volumes --rmi local
 	PROJECT=$(just compose config 2>/dev/null | sed -n 's/^name: *//p'); docker volume ls -q --filter name="${PROJECT}_" 2>/dev/null | while read -r vol; do docker volume rm -f "$vol" > /dev/null 2>&1 || true; done
 	echo -e "✨ ${BOLD}Stack successfully purged!${RESET}"
 
@@ -189,7 +189,7 @@ open target="all":
 	fi
 	if [ "{{ target }}" = "all" ]; then
 		echo "🚀 Ensuring the whole stack is up..."
-		just compose up -d --remove-orphans
+		just compose --profile frontend up -d --remove-orphans
 		just ports
 		just check-ports
 	else
