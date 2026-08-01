@@ -1,4 +1,4 @@
-# Test stack — minimal services for CI / validation.
+# Test overrides — GHCR images, minimal limits, no restart.
 # Usage: ENV=test docker compose -f compose.common.yml -f compose.test.yml up
 
 include:
@@ -7,29 +7,8 @@ include:
 services:
 
   postiz-backend:
-    build:
-      context: ./src
-      dockerfile: ../Dockerfile
-      target: backend
-    container_name: postiz-backend
     environment:
       NODE_OPTIONS: "--max-old-space-size=512"
-      PORT: "3000"
-      DATABASE_URL: "postgresql://postiz-local:postiz-local-pwd@postiz-postgres:5432/postiz-db-local"
-      REDIS_URL: "redis://postiz-redis:6379"
-      TEMPORAL_ADDRESS: "temporal:7233"
-      JWT_SECRET: "test-jwt-secret"
-      FRONTEND_URL: "http://localhost:4200"
-      STORAGE_PROVIDER: "local"
-      IS_GENERAL: "true"
-    depends_on:
-      postiz-postgres:
-        condition: service_healthy
-      postiz-redis:
-        condition: service_started
-    networks:
-      - postiz-network
-      - temporal-network
     deploy:
       resources:
         limits:
@@ -38,20 +17,8 @@ services:
           memory: 256M
 
   postiz-frontend:
-    build:
-      context: ./src
-      dockerfile: ../Dockerfile
-      target: frontend
-    container_name: postiz-frontend
     environment:
       NODE_OPTIONS: "--max-old-space-size=512"
-      FRONTEND_PORT: "4200"
-      BACKEND_INTERNAL_URL: "http://postiz-backend:3000"
-    depends_on:
-      postiz-backend:
-        condition: service_started
-    networks:
-      - postiz-network
     deploy:
       resources:
         limits:
