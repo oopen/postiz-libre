@@ -67,7 +67,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 1280M
         reservations:
           memory: 256M
 
@@ -118,7 +118,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 384M
         reservations:
           memory: 128M
 
@@ -137,9 +137,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
-        reservations:
           memory: 32M
+        reservations:
+          memory: 16M
 
   temporal-ui:
     container_name: temporal-ui
@@ -154,9 +154,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 128M
         reservations:
-          memory: 64M
+          memory: 32M
 
   ferron:
     container_name: postiz-ferron
@@ -181,7 +181,6 @@ services:
 
   postiz-backend:
     container_name: postiz-backend
-    image: ghcr.io/oopen/postiz-libre:latest
     environment:
       SERVICE: backend
     networks:
@@ -196,7 +195,6 @@ services:
 
   postiz-frontend:
     container_name: postiz-frontend
-    image: ghcr.io/oopen/postiz-libre:latest
     environment:
       SERVICE: frontend
     networks:
@@ -210,7 +208,6 @@ services:
 
   postiz-orchestrator:
     container_name: postiz-orchestrator
-    image: ghcr.io/oopen/postiz-libre:latest
     environment:
       SERVICE: orchestrator
       NODE_OPTIONS: "--max-old-space-size=256"
@@ -227,7 +224,6 @@ services:
 
   postiz-db-init:
     container_name: postiz-db-init
-    image: ghcr.io/oopen/postiz-libre:latest
     environment:
       SERVICE: db-init
     depends_on:

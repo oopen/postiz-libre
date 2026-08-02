@@ -1,3 +1,14 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# AI AGENT SAFETY RULES — DO NOT REMOVE
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEVER execute:  git add, git commit, git merge, git push, just git-push
+# NEVER execute:  git branch -D, git reset --hard, git clean -fd
+# NEVER execute:  just purge, just reset without EXPLICIT user confirmation
+# NEVER delete:   files, branches, tags without EXPLICIT user confirmation
+# AI agents MUST: present diffs, suggest commit messages, STOP after coding
+# The USER always: reviews code, stages, commits, and pushes personally
+# ═══════════════════════════════════════════════════════════════════════════════
+
 # Define precise web services that require http:// or https:// routing.
 # Format: "service_name:internal_port" (space-separated)
 WEB_SERVICES := "temporal-ui:8080 postiz-pg-admin:80 postiz-redisinsight:5540 postiz-frontend:4200 postiz-backend:3000 ferron:80"
@@ -35,44 +46,42 @@ set positional-arguments := true
 
 # List available commands, environment status, and filtering usage
 default:
+	#!/usr/bin/env bash
 	just --list
-	@echo ""
-	@echo "💡 Quick Start:"
-	@echo "  just up                       # Start dev stack (Docker infra + app servers)"
-	@echo "  just stop                     # Stop everything"
-	@echo "  just restart                  # Reboot everything"
-	@echo ""
-	@echo "💡 Monitoring:"
-	@echo "  just stats                    # Docker container resource usage"
-	@echo "  just backend-health           # Check backend (DB, Redis, Temporal)"
-	@echo "  just frontend-health          # Check frontend + backend status"
-	@echo "  just app-logs                 # Tail app server logs"
-	@echo "  just check-ports              # Check TCP port connectivity"
-	@echo ""
-	@echo "💡 Environment Usage Examples:"
-	@echo "  just up                       # Start in dev mode (default)"
-	@echo "  ENV=prod just up              # Start in production mode"
-	@echo "  ENV=test just check-ports     # Test health in testing mode"
-	@echo ""
-	@echo "📋 Allowed ENV values: dev, prod, test"
-	@echo ""
-	@echo "🛑 Lifecycle Guide:"
-	@echo "  just stop                     # PAUSE: Freeze containers"
-	@echo "  just restart                  # REBOOT: Stop + start"
-	@echo "  just reset                    # RESET: Destroy volumes + fresh start"
-	@echo "  just purge                    # TOTAL PURGE: Containers + volumes + images"
-	@echo ""
-	@echo "📦 Build & Release:"
-	@echo "  just build                    # Production build in Docker"
-	@echo "  just tag                      # List libre tags"
-	@echo "  just tag-next                 # Compute next tag"
-	@echo "  just tag-create               # Create annotated tag (guarded)"
-	@echo "  just push [branch]            # Build + push branch to origin (default: dev)"
-	@echo ""
-	@echo "⚙️ Current Context:"
-	@echo "  Active Environment : {{ RAW_ENV }} (normalized: {{ ENV }})"
-	@echo "  Target Config File : {{ COMPOSE_FILE }}"
-	@echo ""
+	echo -e "\x1b[1m\n── Lifecycle ───────────────────────────────────────────────\x1b[0m"
+	echo -e "  \x1b[32m🟢  up\x1b[0m                       # Start dev stack"
+	echo -e "  \x1b[32m⏸️   stop\x1b[0m                     # Pause all containers"
+	echo -e "  \x1b[32m🔄  restart\x1b[0m                  # Stop + start"
+	echo -e "  \x1b[32m♻️   rebuild\x1b[0m                  # Force full rebuild"
+	echo -e "  \x1b[31m💣  reset\x1b[0m                    # Nuke volumes + restart"
+	echo -e "  \x1b[31m🔥  purge\x1b[0m                    # Nuke everything + images"
+	echo -e "  \x1b[36m🔍  is-purged\x1b[0m                # Check for leftovers"
+	echo -e "\x1b[1m\n── Monitoring ──────────────────────────────────────────────\x1b[0m"
+	echo -e "  \x1b[36m📊  stats\x1b[0m                    # Docker CPU / RAM usage"
+	echo -e "  \x1b[36m🗺️   ports\x1b[0m                    # Service port map"
+	echo -e "  \x1b[36m🌐  open\x1b[0m                     # Start + open in browser"
+	echo -e "  \x1b[36m🔌  check-ports\x1b[0m              # TCP connectivity check"
+	echo -e "  \x1b[36m🔎  ports-query\x1b[0m              # Port bindings (scriptable)"
+	echo -e "\x1b[1m\n── App ──────────────────────────────────────────────────────\x1b[0m"
+	echo -e "  \x1b[32m📜  app-logs\x1b[0m                 # Tail backend + frontend"
+	echo -e "  \x1b[32m❤️   app-backend-health\x1b[0m       # Backend: DB / Redis / Temporal"
+	echo -e "  \x1b[32m❤️   app-frontend-health\x1b[0m      # Frontend + backend status"
+	echo -e "  \x1b[33m🔧  app-build\x1b[0m                # Production build"
+	echo -e "  \x1b[33m🧹  app-build-purge\x1b[0m          # Clean build volumes"
+	echo -e "\x1b[1m\n── Git ──────────────────────────────────────────────────────\x1b[0m"
+	echo -e "  \x1b[33m🏷️   git-tag\x1b[0m                  # List libre tags"
+	echo -e "  \x1b[33m🏷️   git-tag-next\x1b[0m             # Compute next tag"
+	echo -e "  \x1b[33m📌  git-tag-create\x1b[0m           # Create annotated tag"
+	echo -e "  \x1b[31m🚀  git-push [branch]\x1b[0m         # Build + push + tags"
+	echo -e "\x1b[1m\n── Config ──────────────────────────────────────────────────\x1b[0m"
+	echo -e "  \x1b[35mENV=dev\x1b[0m     (default)         # Hot-reload, source mounts"
+	echo -e "  \x1b[35mENV=prod\x1b[0m                      # GHCR images, auto-restart"
+	echo -e "  \x1b[35mENV=test\x1b[0m                      # Minimal limits"
+	echo -e "  \x1b[35mFERRON_DOMAIN=*\x1b[0m              # Behind reverse proxy"
+	echo -e "  \x1b[35mFERRON_DOMAIN=example.com\x1b[0m    # Let's Encrypt auto-TLS"
+	echo ""
+	echo -e "  \x1b[1m⚙️   {{ ENV }} | {{ COMPOSE_FILE }} | FERRON: {{ FERRON_CONFIG }}\x1b[0m"
+	echo ""
 
 # Wrapper to execute any native docker compose command within the detected environment
 compose *args:
@@ -86,15 +95,16 @@ up:
 	echo "🚀 Starting infrastructure + backend..."
 	just compose up -d --remove-orphans
 	echo "⏳ Waiting for backend health..."
-	until just backend-health > /dev/null 2>&1; do sleep 2; done
+	until just app-backend-health > /dev/null 2>&1; do sleep 2; done
 	BACKEND_PORT=$(just compose port postiz-backend 3000 | cut -d: -f2)
-	mkdir -p src/apps/frontend
-	echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:$BACKEND_PORT" > src/apps/frontend/.env.local
+	mkdir -p apps/frontend
+	echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:$BACKEND_PORT" > apps/frontend/.env.local
+	echo "NODE_OPTIONS=--max-old-space-size=4096" >> apps/frontend/.env.local
 	echo "✅ Backend ready at localhost:$BACKEND_PORT"
 	echo "🚀 Starting frontend..."
 	just compose --profile frontend up -d --remove-orphans
 	echo "⏳ Waiting for frontend health..."
-	until just frontend-health > /dev/null 2>&1; do sleep 2; done
+	until just app-frontend-health > /dev/null 2>&1; do sleep 2; done
 	FRONTEND_PORT=$(just compose port postiz-frontend 4200 | cut -d: -f2)
 	echo "✅ Frontend ready at localhost:$FRONTEND_PORT"
 	just ports
@@ -119,7 +129,7 @@ stats:
 	just compose stats --no-stream
 
 # Check backend application health (DB, Redis, Temporal)
-backend-health:
+app-backend-health:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	BACKEND_PORT=$(just compose port postiz-backend 3000 2>/dev/null | cut -d: -f2)
@@ -127,7 +137,7 @@ backend-health:
 	curl -s "http://localhost:$BACKEND_PORT/health" || { echo "❌ Backend not responding"; exit 1; }
 
 # Check frontend application health (includes backend status)
-frontend-health:
+app-frontend-health:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	FRONTEND_PORT=$(just compose port postiz-frontend 4200 2>/dev/null | cut -d: -f2)
@@ -139,7 +149,8 @@ restart: stop up
 
 # Stop and remove all containers, networks, and database volumes, then fresh start
 reset:
-	just compose --profile frontend --profile build down --remove-orphans --volumes
+	just compose --profile '"*"' down --remove-orphans --volumes
+	just is-purged || true
 	just up
 
 # Deep clean this local Docker stack
@@ -156,9 +167,11 @@ purge:
 		exit 0
 	fi
 	echo "🧹 Destroying stack containers, volumes, and locally built images..."
-	just compose --profile frontend --profile build down --remove-orphans --volumes --rmi local
-	PROJECT=$(just compose config 2>/dev/null | sed -n 's/^name: *//p'); docker volume ls -q --filter name="${PROJECT}_" 2>/dev/null | while read -r vol; do docker volume rm -f "$vol" > /dev/null 2>&1 || true; done
+	just compose --profile '"*"' down --remove-orphans --volumes --rmi local
+	PROJECT=$(just _project-name); docker volume ls -q --filter name="${PROJECT}_" 2>/dev/null | while read -r vol; do docker volume rm -f "$vol" > /dev/null 2>&1 || true; done
 	echo -e "✨ ${BOLD}Stack successfully purged!${RESET}"
+	echo ""
+	just is-purged 2>&1 || true
 
 # Parse 'docker compose ps' output to extract real host ports with colorized UI
 ports:
@@ -189,7 +202,7 @@ open target="all":
 	fi
 	if [ "{{ target }}" = "all" ]; then
 		echo "🚀 Ensuring the whole stack is up..."
-		just compose up -d --remove-orphans
+		just compose --profile frontend up -d --remove-orphans
 		just ports
 		just check-ports
 	else
@@ -250,8 +263,8 @@ check-ports:
 		exit 1
 	fi
 
-# Query specific port bindings for automation scripts. Filters: all, web, tcp, udp
-query filter="all":
+# Query port bindings for automation scripts. Filters: all, web, tcp, udp
+ports-query filter="all":
 	just _query {{ filter }}
 
 # ==============================================================================
@@ -259,15 +272,15 @@ query filter="all":
 # ==============================================================================
 
 # Production build (all apps) — runs inside Docker
-build:
+app-build:
 	just compose --profile build run --rm postiz-build
 
 # Clean build volumes and artifacts (leaves dev infra intact)
-build-purge:
+app-build-purge:
 	just compose --profile build down --remove-orphans --volumes --rmi local
 
 # Build + push to origin
-push branch="dev": build
+git-push branch="dev": app-build
 	@echo "🚀 Pushing to origin/{{ branch }} + tags..."
 	git push origin {{ branch }} --tags
 
@@ -276,11 +289,11 @@ push branch="dev": build
 # ==============================================================================
 
 # List all libre release tags (newest first)
-tag:
+git-tag:
 	git tag --list 'v*-libre*' --sort=-v:refname
 
 # Compute the next libre tag without creating it (read-only)
-tag-next:
+git-tag-next:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	if ! git remote get-url upstream > /dev/null 2>&1; then
@@ -297,16 +310,16 @@ tag-next:
 	fi
 
 # Create annotated tag (must be on dev, tree clean, stack healthy)
-tag-create:
+git-tag-create:
 	#!/usr/bin/env bash
 	set -euo pipefail
 	BRANCH=$(git branch --show-current)
 	if [ "$BRANCH" != "dev" ]; then echo "❌ Must be on 'dev' branch" >&2; exit 1; fi
 	if ! git diff-index --quiet HEAD --; then echo "❌ Working tree is dirty" >&2; exit 1; fi
 	echo "🧪 Checking stack health..."
-	if ! just backend-health > /dev/null 2>&1; then echo "❌ Backend unhealthy" >&2; exit 1; fi
-	if ! just frontend-health > /dev/null 2>&1; then echo "❌ Frontend unhealthy" >&2; exit 1; fi
-	TAG=$(just tag-next)
+	if ! just app-backend-health > /dev/null 2>&1; then echo "❌ Backend unhealthy" >&2; exit 1; fi
+	if ! just app-frontend-health > /dev/null 2>&1; then echo "❌ Frontend unhealthy" >&2; exit 1; fi
+	TAG=$(just git-tag-next)
 	if [ -z "${TAG:-}" ]; then echo "❌ Could not determine next tag" >&2; exit 1; fi
 	if git rev-parse "refs/tags/$TAG" > /dev/null 2>&1; then echo "❌ Tag $TAG already exists" >&2; exit 1; fi
 	echo "  Next tag: $TAG"
@@ -315,9 +328,37 @@ tag-create:
 	git tag -a "$TAG" -m "Release $TAG"
 	echo "✅ $TAG created"
 
+# Check for stack resource leftovers (exit 0=clean, exit 1=residues)
+is-purged:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	PROJECT=$(just _project-name)
+	CONTAINERS=$(docker ps -aq --filter "label=com.docker.compose.project=${PROJECT}" | wc -l)
+	VOLUMES=$(docker volume ls -q --filter "label=com.docker.compose.project=${PROJECT}" | wc -l)
+	NETWORKS=$(docker network ls -q --filter "label=com.docker.compose.project=${PROJECT}" | wc -l)
+	IMAGES=$(docker images -q --filter "label=com.docker.compose.project=${PROJECT}" | wc -l)
+	MY_IMAGES=$(docker images -q --filter "reference=ghcr.io/oopen/postiz-libre*" | wc -l)
+	ORPHAN_CT=$(docker ps -aq --filter "name=postiz" 2>/dev/null | wc -l)
+	CACHE=$(docker builder du --human-readable 2>/dev/null | tail -1 | awk '{print $1}') || true
+	echo "🗑️  Audit: ${PROJECT}"
+	echo "  Containers      : ${CONTAINERS}"
+	echo "  Volumes         : ${VOLUMES}"
+	echo "  Networks        : ${NETWORKS}"
+	echo "  Images (built)  : ${IMAGES}"
+	echo "  Images (pull)   : ${MY_IMAGES}"
+	echo "  Orphans (name)  : ${ORPHAN_CT}"
+	echo "  Build cache     : ${CACHE:-N/A}"
+	echo "  ──────────────────────────"
+	TOTAL=$((CONTAINERS + VOLUMES + NETWORKS + IMAGES + MY_IMAGES + ORPHAN_CT))
+	if [ "$TOTAL" -eq 0 ]; then echo "✅ Clean"; else echo "⚠️  ${TOTAL} leftover(s) — run just purge"; fi
+
 # ==============================================================================
 # Private Helpers (Hidden from 'just --list')
 # ==============================================================================
+
+# Get active compose project name
+_project-name:
+	@just compose config 2>/dev/null | sed -n 's/^name: *//p'
 
 _query filter:
 	#!/usr/bin/env bash

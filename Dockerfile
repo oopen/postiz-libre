@@ -1,7 +1,7 @@
 # Postiz-libre multi-stage Dockerfile
-# Build context: ./src
-# Build: docker build -f ../Dockerfile --target <stage> .
-# Targets: base, deps, builder, backend, frontend, orchestrator
+# Build context: .
+# Build: docker build -f Dockerfile --target <stage> .
+# Targets: base, deps, builder, backend, frontend, orchestrator, runtime
 
 FROM node:24-bookworm-slim AS base
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -28,7 +28,7 @@ RUN pnpm install --frozen-lockfile
 # ── builder ──
 FROM deps AS builder
 COPY . .
-RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm run build
+RUN NODE_OPTIONS="--max-old-space-size=4096" NEXT_BUILD_WORKERS=4 pnpm run build
 
 # ── backend ──
 FROM base AS backend
